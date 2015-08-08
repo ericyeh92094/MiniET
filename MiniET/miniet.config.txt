@@ -1,0 +1,21 @@
+# config file for min ET converter
+
+#paper margin definition, in inch
+Paper = (
+	size = A4
+	left = 1.0
+	up = 1.0
+	right = 1.0
+	bottom = 1.0
+}
+
+#font folder and file setting
+Fonts = (
+	default = GenShinGothic-Monospace-Normal.ttf
+	標楷體 = kaiu.ttf
+	新細明體 = mingliu.ttc
+}
+
+
+
+	

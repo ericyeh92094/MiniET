@@ -1,0 +1,516 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\haru">
+      <UniqueIdentifier>{381aab79-c88b-4f65-a2ad-b7d9e78b81a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\haru">
+      <UniqueIdentifier>{0a41d1e9-3c3f-4efd-9190-5672bcc984bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\zlib">
+      <UniqueIdentifier>{cfe0b132-1412-41aa-9bfd-f9d2f028efa3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\libpng">
+      <UniqueIdentifier>{6d8b3dda-6dea-4703-9d83-2891407797b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\zlib">
+      <UniqueIdentifier>{6c37428d-e5b9-4730-83bf-a3d152262ce6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\libpng">
+      <UniqueIdentifier>{61f717dc-04bd-497d-8c4d-69eda2ca7361}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\et_kernel">
+      <UniqueIdentifier>{b63a1e32-43b4-4b24-9c9e-3656c71a6375}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\et_kernel">
+      <UniqueIdentifier>{6d14df28-f25b-41b2-b6c2-8a52fcbc455f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_annotation.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_catalog.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_conf.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_consts.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_destination.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_doc.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_encoder.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_encrypt.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_encryptdict.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_error.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_ext_gstate.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_font.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_fontdef.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_gstate.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_image.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_info.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_list.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_mmgr.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_objects.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_outline.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_page_label.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_pages.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_streams.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_types.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_utils.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="include\utf8.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\include\crc32.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\include\deflate.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\include\gzguts.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\include\inffast.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\include\inffixed.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\include\inflate.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\include\inftrees.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\include\trees.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\include\zconf.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\include\zlib.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\include\zutil.h">
+      <Filter>Header Files\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\include\png.h">
+      <Filter>Header Files\libpng</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\include\pngconf.h">
+      <Filter>Header Files\libpng</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\include\pngdebug.h">
+      <Filter>Header Files\libpng</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\include\pnginfo.h">
+      <Filter>Header Files\libpng</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\include\pngpriv.h">
+      <Filter>Header Files\libpng</Filter>
+    </ClInclude>
+    <ClInclude Include="libpng\include\pngstruct.h">
+      <Filter>Header Files\libpng</Filter>
+    </ClInclude>
+    <ClInclude Include="et_command.h">
+      <Filter>Header Files\et_kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="et_datachunk.h">
+      <Filter>Header Files\et_kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_3dmeasure.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_exdata.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_namedict.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_pdfa.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_u3d.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_version.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\hpdf_config.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="et_hpdcdoc.h">
+      <Filter>Header Files\et_kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="haru\include\t4.h">
+      <Filter>Header Files\haru</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CmdLineParserEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MiniET.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_annotation.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_array.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_binary.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_boolean.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_catalog.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_destination.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_dict.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_doc.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_doc_png.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_encoder.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_encoder_cns.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_encoder_cnt.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_encoder_jp.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_encoder_kr.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_encrypt.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_encryptdict.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_error.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_ext_gstate.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_font.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_font_cid.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_font_tt.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_font_type1.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_fontdef.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_fontdef_base14.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_fontdef_cid.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_fontdef_cns.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_fontdef_cnt.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_fontdef_jp.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_fontdef_kr.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_fontdef_tt.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_fontdef_type1.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_gstate.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_image.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_image_png.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_info.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_list.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_mmgr.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_name.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_null.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_number.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_objects.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_outline.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_page_label.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_page_operator.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_pages.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_real.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_streams.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_string.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_utils.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_xref.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\src\adler32.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\src\compress.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\src\crc32.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\src\deflate.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\src\gzclose.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\src\gzlib.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\src\gzread.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\src\gzwrite.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\src\infback.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\src\inffast.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\src\inflate.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\src\inftrees.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\src\trees.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\src\uncompr.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\src\zutil.c">
+      <Filter>Source Files\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\src\png.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\src\pngerror.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\src\pngget.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\src\pngmem.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\src\pngpread.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\src\pngread.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\src\pngrio.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\src\pngrtran.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\src\pngrutil.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\src\pngset.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\src\pngtrans.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\src\pngwio.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\src\pngwrite.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\src\pngwtran.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="libpng\src\pngwutil.c">
+      <Filter>Source Files\libpng</Filter>
+    </ClCompile>
+    <ClCompile Include="et_command.cpp">
+      <Filter>Source Files\et_kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="et_datachunk.cpp">
+      <Filter>Source Files\et_kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_3dmeasure.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_encoder_utf.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_exdata.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_image_ccitt.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_namedict.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_pdfa.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="haru\src\hpdf_u3d.c">
+      <Filter>Source Files\haru</Filter>
+    </ClCompile>
+    <ClCompile Include="utf8.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="et_hpdfdoc.cpp">
+      <Filter>Source Files\et_kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="config.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CmdLineParserEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
