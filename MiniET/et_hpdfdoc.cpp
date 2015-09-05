@@ -2,6 +2,19 @@
 #include "et_hpdcdoc.h"
 #include "include\utf8.h"
 
+HPDF_REAL hpdf_doc::def_f_margin_top = PDF_DEFAULT_MARGIN_TOP;
+HPDF_REAL hpdf_doc::def_f_margin_left = PDF_DEFAULT_MARGIN_LEFT;
+HPDF_REAL hpdf_doc::def_f_margin_bottom = PDF_DEFAULT_MARGIN_BOTTOM;
+HPDF_REAL hpdf_doc::def_f_margin_right = PDF_DEFAULT_MARGIN_RIGHT;
+
+
+void hpdf_doc::set_margins(HPDF_REAL top, HPDF_REAL left, HPDF_REAL bottom, HPDF_REAL right)
+{
+	def_f_margin_top = top;
+	def_f_margin_left = left;
+	def_f_margin_bottom = bottom;
+	def_f_margin_right = right;
+}
 
 void hpdf_doc::error_handler(HPDF_STATUS error_no, HPDF_STATUS detail_no, void *user_data)
 {

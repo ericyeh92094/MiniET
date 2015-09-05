@@ -48,6 +48,11 @@ public:
 
 class hpdf_doc {
 
+	static HPDF_REAL def_f_margin_top;
+	static HPDF_REAL def_f_margin_left;
+	static HPDF_REAL def_f_margin_bottom;
+	static HPDF_REAL def_f_margin_right;
+
 	typedef void(*draw_symbol_function)(int line_width, int lw, int x, int y, int x1, int y1, int x2, int y2, int w, int h, int w1, int h1, int w2, int h2);
 
 	HPDF_REAL MMTEXT2PTX(long nUnit) { return (HPDF_REAL)((double)nUnit * 72.0 / (double)n_log_X); }
@@ -80,6 +85,7 @@ public:
 	hpdf_doc(const char* filepath);
 	~hpdf_doc();
 
+	static void set_margins(HPDF_REAL top, HPDF_REAL left, HPDF_REAL bottom, HPDF_REAL right);
 	void begin_doc_and_page();
 	void end_doc();
 

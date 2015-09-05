@@ -27,6 +27,8 @@ using namespace std;
 #define LEFT_CURLY_BRACKET		(0x007b)
 #define RIGHT_CURLY_BRACKET		(0x007d)
 
+#define DEFAULT_CONFIG_FILE		"miniet.config"
+
 int read_utf8_file(const wchar_t  *filename);
 int output_pdf_file(const wchar_t *output_file);
 int break_et_wstring(wchar_t* w_string, size_t str_size, wchar_t control_code, bool new_line);
@@ -34,7 +36,7 @@ int break_et_wstring(wchar_t* w_string, size_t str_size, wchar_t control_code, b
 static vector<vector<et_datachunk>> data_vect;
 static std::vector<et_datachunk> data_line;
 
-int _tmain(int argc, wchar_t* argv[], wchar_t *envp[])
+int _tmain(int argc, char* argv[], char *envp[])
 {
 	command::init_lookup_table(); // init command dispatch table
 
@@ -43,8 +45,8 @@ int _tmain(int argc, wchar_t* argv[], wchar_t *envp[])
 		return 0;
 	}
 
-	wchar_t *test_file_path = argv[1];
-	wchar_t *output_path= argv[2];
+	char *test_file_path = argv[1];
+	char *output_path= argv[2];
 
 
 
@@ -67,12 +69,28 @@ int read_switch()
 
 }
 
-int read_config()
+void read_config(string configfile, char *envp[])
 {
+	if (configfile == "")
+		configfile = DEFAULT_CONFIG_FILE;
+
+	Config config(configfile, envp);
+
+	map<string, Config*> groups = config.getGroups(); // all groups
+
+	for (map<string, Config*>::iterator i = groups.begin(); i != groups.end(); ++i) {
+		string groupName = i->first;
+		Config* group = i->second;
+
+		if (groupName == "Paper") {
+
+		}
+		else if (groupName == "Fonts")
+	}
 
 }
 
-int read_utf8_file(const wchar_t *filename)
+int read_utf8_file(char *filename)
 {
 	// Open the test file (contains UTF-8 encoded text)
 	ifstream fs8(filename);
@@ -119,14 +137,14 @@ int read_utf8_file(const wchar_t *filename)
 	return line_count;
 }
 
-int output_pdf_file(const wchar_t* output_file)
+int output_pdf_file(char* output_file)
 {
-	char mb_output_file[_MAX_PATH];
-	wcstombs(mb_output_file, output_file,_MAX_PATH);
+	//char mb_output_file[_MAX_PATH];
+	//wcstombs(mb_output_file, output_file,_MAX_PATH);
 
 	vector<vector<et_datachunk>>::iterator line_iter;
 
-	hpdf_doc *doc = new hpdf_doc((const char*)mb_output_file);
+	hpdf_doc *doc = new hpdf_doc((const char*)output_file);
 
 	line_iter = data_vect.begin();
 	doc->begin_doc_and_page();
