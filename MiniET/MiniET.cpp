@@ -45,8 +45,8 @@ int _tmain(int argc, char* argv[], char *envp[])
 		return 0;
 	}
 
-	char *test_file_path = argv[1];
-	char *output_path= argv[2];
+	wchar_t *test_file_path = (wchar_t *)argv[1];
+	wchar_t *output_path= (wchar_t *)argv[2];
 
 
 
@@ -64,7 +64,7 @@ int _tmain(int argc, char* argv[], char *envp[])
 	return 0;
 }
 
-int read_switch()
+void read_switch()
 {
 
 }
@@ -78,7 +78,8 @@ void read_config(string configfile, char *envp[])
 
 	map<string, Config*> groups = config.getGroups(); // all groups
 
-	for (map<string, Config*>::iterator i = groups.begin(); i != groups.end(); ++i) {
+	for (map<string, Config*>::iterator i = groups.begin(); i != groups.end(); ++i)
+	{
 		string groupName = i->first;
 		Config* group = i->second;
 
@@ -86,11 +87,14 @@ void read_config(string configfile, char *envp[])
 
 		}
 		else if (groupName == "Fonts")
+		{
+
+		}
 	}
 
 }
 
-int read_utf8_file(char *filename)
+int read_utf8_file(const wchar_t *filename)
 {
 	// Open the test file (contains UTF-8 encoded text)
 	ifstream fs8(filename);
@@ -137,14 +141,14 @@ int read_utf8_file(char *filename)
 	return line_count;
 }
 
-int output_pdf_file(char* output_file)
+int output_pdf_file(const wchar_t* output_file)
 {
-	//char mb_output_file[_MAX_PATH];
-	//wcstombs(mb_output_file, output_file,_MAX_PATH);
+	char mb_output_file[_MAX_PATH];
+	wcstombs(mb_output_file, output_file,_MAX_PATH);
 
 	vector<vector<et_datachunk>>::iterator line_iter;
 
-	hpdf_doc *doc = new hpdf_doc((const char*)output_file);
+	hpdf_doc *doc = new hpdf_doc((const char*)mb_output_file);
 
 	line_iter = data_vect.begin();
 	doc->begin_doc_and_page();

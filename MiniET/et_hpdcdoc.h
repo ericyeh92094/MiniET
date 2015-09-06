@@ -32,6 +32,8 @@
 #define PDF_DEFAULT_MARGIN_LEFT	(0.5)
 #define PDF_DEFAULT_MARGIN_BOTTOM	(1.5)
 #define PDF_DEFAULT_MARGIN_RIGHT	(1.5)
+#define PDF_DEFAULT_WIDTH			(210/25.4) // inch - A4
+#define PDF_DEFAULT_LENGTH			(297/25.4) // inch - A4
 
 using namespace std;
 
@@ -52,6 +54,8 @@ class hpdf_doc {
 	static HPDF_REAL def_f_margin_left;
 	static HPDF_REAL def_f_margin_bottom;
 	static HPDF_REAL def_f_margin_right;
+	static HPDF_REAL def_f_length;
+	static HPDF_REAL def_f_width;
 
 	typedef void(*draw_symbol_function)(int line_width, int lw, int x, int y, int x1, int y1, int x2, int y2, int w, int h, int w1, int h1, int w2, int h2);
 
