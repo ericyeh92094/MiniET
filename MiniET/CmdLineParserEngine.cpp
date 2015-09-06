@@ -10,18 +10,24 @@ CmdLineParserEngine::~CmdLineParserEngine(void)
 {
 }
 
-bool CmdLineParserEngine::ProcessCommandLine(int argc, char* argv[])
+bool CmdLineParserEngine::ProcessCommandLine(int argc, wchar_t* argv[])
 {
 	// name of exe
 	size_t found;
-	m_sNameOfExecutable = argv[0];
+
+	char argv_str[_MAX_PATH];
+
+	wcstombs(argv_str, argv[0], _MAX_PATH);
+
+	m_sNameOfExecutable = argv_str;
 	found=m_sNameOfExecutable.find_last_of("/\\");
 	m_sNameOfExecutable = m_sNameOfExecutable.substr(found+1);
 
 	// check if help requested
 	if(argc == 2)
 	{
-		if(strcmp(argv[1], "-help") == 0)
+		wcstombs(argv_str, argv[1], _MAX_PATH);
+		if(strcmp(argv_str, "-help") == 0)
 		{
 			PrintHelp();
 			return true;
@@ -34,15 +40,18 @@ bool CmdLineParserEngine::ProcessCommandLine(int argc, char* argv[])
 	CmdLineParserArgument argument;	// the current argument object
 	for (argi=1; argi < argc; argi++)
 	{
-		if(ARG_IS_SWITCH(argv[argi]))
+		wcstombs(argv_str, argv[argi], _MAX_PATH);
+		if(ARG_IS_SWITCH(argv_str))
 		{
-			if(GetParameterEx(argv[argi], param))
+			if(GetParameterEx(argv_str, param))
 			{
 				param.m_bExists = true;
 				int argIndex;
 				for(argIndex=0; argIndex<param.GetArgumentCount(); argIndex++)
 				{
-					if(ARG_IS_SWITCH(argv[argi+argIndex+1]))
+					wcstombs(argv_str, argv[argi + argIndex + 1], _MAX_PATH);
+
+					if(ARG_IS_SWITCH(argv_str))
 					{
 						// if the argument needs a specified value (here we don't have such value on the cmdline), we fail.
 						if( param.GetArgumentAt(argIndex, argument) )
@@ -56,14 +65,14 @@ bool CmdLineParserEngine::ProcessCommandLine(int argc, char* argv[])
 					}
 					else
 					{
-						param.SetArgumentContent(argIndex, argv[argi+argIndex+1]);
+						param.SetArgumentContent(argIndex, argv_str);
 					}
 				}
 				SetParameter(param.m_sName, param); // replace old param
 			}
 			else
 			{
-				cerr << argv[argi] << ": unknown parameter." << endl;
+				cerr << argv_str << ": unknown parameter." << endl;
 				return false;
 			}
 		}

@@ -10,8 +10,10 @@ HPDF_REAL hpdf_doc::def_f_width = PDF_DEFAULT_WIDTH;
 HPDF_REAL hpdf_doc::def_f_length = PDF_DEFAULT_LENGTH;
 
 
-void hpdf_doc::set_margins(HPDF_REAL top, HPDF_REAL left, HPDF_REAL bottom, HPDF_REAL right)
+void hpdf_doc::set_paper_margins(HPDF_REAL width, HPDF_REAL length, HPDF_REAL top, HPDF_REAL left, HPDF_REAL bottom, HPDF_REAL right)
 {
+	def_f_width = width;
+	def_f_length = length;
 	def_f_margin_top = top;
 	def_f_margin_left = left;
 	def_f_margin_bottom = bottom;
@@ -187,15 +189,15 @@ void hpdf_doc::new_page()
 
 	h_current_page = HPDF_AddPage(h_pdf);
 
-	f_width = def_f_width * 72; // HPDF_Page_GetWidth(h_current_page);
-	f_length = def_f_length * 72; // HPDF_Page_GetHeight(h_current_page);
+	HPDF_Page_SetSize(h_current_page, HPDF_PAGE_SIZE_A4, HPDF_PAGE_PORTRAIT);
 
-	f_xpos = f_margin_x = def_f_margin_left * 72;
-	f_margin_y = def_f_margin_top * 72;
+	f_width = INCH2PT(def_f_width); // HPDF_Page_GetWidth(h_current_page);
+	f_length = INCH2PT(def_f_length); // HPDF_Page_GetHeight(h_current_page);
+
+	f_xpos = f_margin_x = INCH2PT(def_f_margin_left);
+	f_margin_y = INCH2PT(def_f_margin_top);
 	f_ypos = f_length - f_margin_y;
 
-	HPDF_Page_SetSize(h_current_page, HPDF_PAGE_SIZE_A4, HPDF_PAGE_PORTRAIT);
-	
 	HPDF_Page_SetHeight(h_current_page, f_length);
 	HPDF_Page_SetWidth(h_current_page, f_width);
 

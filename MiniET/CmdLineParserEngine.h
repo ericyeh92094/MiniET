@@ -44,7 +44,7 @@ public:
 	void AddParameter(const CmdLineParserParameter&);
 	void AddExample(const CmdLineParserExample&);
 	void PrintHelp(void);
-	bool ProcessCommandLine(int argc, char* argv[]);
+	bool ProcessCommandLine(int argc, wchar_t* argv[]);
 	bool TryGetParameter(const string name, CmdLineParserParameter& outParameter);
 	int GetParsedParametersCount(void);
 	bool IsHelpRequested(void);

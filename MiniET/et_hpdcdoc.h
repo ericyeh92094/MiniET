@@ -28,8 +28,9 @@
 #define PDF_STD_UNICODE		"Fonts\\GenShinGothic-Monospace-Normal.ttf"
 #define PDF_STD_BOLD		"Fonts\\GenShinGothic-Monospace-Bold.ttf"
 #define PDF_STD_ENCODE		"UTF-8"
-#define PDF_DEFAULT_MARGIN_TOP	(1.0)
-#define PDF_DEFAULT_MARGIN_LEFT	(0.5)
+
+#define PDF_DEFAULT_MARGIN_TOP		(1.0)
+#define PDF_DEFAULT_MARGIN_LEFT		(0.5)
 #define PDF_DEFAULT_MARGIN_BOTTOM	(1.5)
 #define PDF_DEFAULT_MARGIN_RIGHT	(1.5)
 #define PDF_DEFAULT_WIDTH			(210/25.4) // inch - A4
@@ -50,6 +51,7 @@ public:
 
 class hpdf_doc {
 
+public:
 	static HPDF_REAL def_f_margin_top;
 	static HPDF_REAL def_f_margin_left;
 	static HPDF_REAL def_f_margin_bottom;
@@ -89,7 +91,7 @@ public:
 	hpdf_doc(const char* filepath);
 	~hpdf_doc();
 
-	static void set_margins(HPDF_REAL top, HPDF_REAL left, HPDF_REAL bottom, HPDF_REAL right);
+	static void set_paper_margins(HPDF_REAL width, HPDF_REAL length, HPDF_REAL top, HPDF_REAL left, HPDF_REAL bottom, HPDF_REAL right);
 	void begin_doc_and_page();
 	void end_doc();
 

@@ -15,6 +15,7 @@
 #include "et_command.h"
 #include "et_datachunk.h"
 #include "et_hpdcdoc.h"
+#include "CmdLineParserEngine.h"
 
 using namespace std;
 
@@ -29,28 +30,35 @@ using namespace std;
 
 #define DEFAULT_CONFIG_FILE		"miniet.config"
 
-int read_utf8_file(const wchar_t  *filename);
-int output_pdf_file(const wchar_t *output_file);
+void read_switch(int argc, wchar_t* argv[]);
+void read_config(string configfile, wchar_t *envp[]);
+int read_utf8_file(string filename);
+int output_pdf_file(string output_file);
 int break_et_wstring(wchar_t* w_string, size_t str_size, wchar_t control_code, bool new_line);
 
 static vector<vector<et_datachunk>> data_vect;
 static std::vector<et_datachunk> data_line;
 
-int _tmain(int argc, char* argv[], char *envp[])
+static string config_file, target_file, output_file;
+
+int _tmain(int argc, wchar_t* argv[], wchar_t *envp[])
 {
 	command::init_lookup_table(); // init command dispatch table
 
-	if (argc != 3) {
-		cout << "\nUsage: MiniET filename outputPDF\n";
+	/*
+	if (argc != 4) {
+		cout << "\nUsage: MiniET -c comfigfile filename outputPDF\n";
 		return 0;
 	}
+	*/
 
-	wchar_t *test_file_path = (wchar_t *)argv[1];
-	wchar_t *output_path= (wchar_t *)argv[2];
+	read_switch(argc, argv);
+	read_config(config_file, envp);
 
+	//wchar_t *test_file_path = (wchar_t *)target_file.c_str();
+	//wchar_t *output_path= (wchar_t *)output_file.c_str();
 
-
-	int line = read_utf8_file(test_file_path);
+	int line = read_utf8_file(target_file);
 
 	if (line == 0)
 	{
@@ -59,22 +67,77 @@ int _tmain(int argc, char* argv[], char *envp[])
 	}
 	//start producing the PDF file
 
-	int pdf_line = output_pdf_file(output_path);
+	int pdf_line = output_pdf_file(output_file);
 
 	return 0;
 }
 
-void read_switch()
+void read_switch(int argc,wchar_t* argv[])
 {
+	CmdLineParserEngine parser("This program converts ET encoded text to a PDF file");
+
+	CmdLineParserParameter configswitch("configswitch", "c", "set the configuration file");
+	configswitch.AddArgument(CmdLineParserArgument("config", "CONFIG"));
+	configswitch.AddArgument(CmdLineParserArgument("target", "TARGET"));
+	configswitch.AddArgument(CmdLineParserArgument("output", "OUTPUT"));
+
+	parser.AddParameter(configswitch);
+
+	parser.AddExample(CmdLineParserExample("", "Switch usage: -c config target output"));
+	parser.AddExample(CmdLineParserExample("-c", "config target output"));
+
+	if (parser.ProcessCommandLine(argc, argv) == false)
+	{
+		cerr << "Failed to parse the command line." << endl;
+		goto end_block;
+	}
+
+	// logic is here under
+	if ((parser.GetParsedParametersCount() == 0) && (!parser.IsHelpRequested()))
+	{
+		// no parameters specified by user on the command-line, print current logins and passwords
+		cout << "Current logins and passwords are TOP SECRET." << endl;
+	}
+	else
+	{
+		CmdLineParserParameter param;
+		CmdLineParserArgument argument;
+
+		if (parser.TryGetParameter("configswitch", param))
+		{
+			if (param.TryGetArgument("config", argument))
+			{
+				cout << "config file: " << argument.m_sContent << endl;
+				config_file = argument.m_sContent;
+			}
+			if (param.TryGetArgument("target", argument))
+			{
+				cout << "target file name:" << argument.m_sContent << endl;
+				target_file = argument.m_sContent;
+			}
+			if (param.TryGetArgument("output", argument))
+			{
+				cout << "output file name:" << argument.m_sContent << endl;
+				output_file = argument.m_sContent;
+			}
+
+		}
+	}
+end_block:
+
+	//cout << endl << "Press <Enter> to exit this demo... ";
+	//cin.get();
+
+	return;
 
 }
 
-void read_config(string configfile, char *envp[])
+void read_config(string configfile, wchar_t *envp[])
 {
 	if (configfile == "")
 		configfile = DEFAULT_CONFIG_FILE;
 
-	Config config(configfile, envp);
+	Config config(configfile, (char **)envp);
 
 	map<string, Config*> groups = config.getGroups(); // all groups
 
@@ -84,6 +147,16 @@ void read_config(string configfile, char *envp[])
 		Config* group = i->second;
 
 		if (groupName == "Paper") {
+			HPDF_REAL width, length, left, top, right, bottom;
+
+			width = group->pDouble("width");
+			length = group->pDouble("length");
+			left = group->pDouble("left");
+			top = group->pDouble("top");
+			right = group->pDouble("right");
+			bottom = group->pDouble("bottom");
+
+			hpdf_doc::set_paper_margins(width, length, top, left, right, bottom);
 
 		}
 		else if (groupName == "Fonts")
@@ -94,7 +167,7 @@ void read_config(string configfile, char *envp[])
 
 }
 
-int read_utf8_file(const wchar_t *filename)
+int read_utf8_file(string filename)
 {
 	// Open the test file (contains UTF-8 encoded text)
 	ifstream fs8(filename);
@@ -141,14 +214,14 @@ int read_utf8_file(const wchar_t *filename)
 	return line_count;
 }
 
-int output_pdf_file(const wchar_t* output_file)
+int output_pdf_file(string output_file)
 {
-	char mb_output_file[_MAX_PATH];
-	wcstombs(mb_output_file, output_file,_MAX_PATH);
+	//char mb_output_file[_MAX_PATH];
+	//wcstombs(mb_output_file, output_file,_MAX_PATH);
 
 	vector<vector<et_datachunk>>::iterator line_iter;
 
-	hpdf_doc *doc = new hpdf_doc((const char*)mb_output_file);
+	hpdf_doc *doc = new hpdf_doc(output_file.c_str());
 
 	line_iter = data_vect.begin();
 	doc->begin_doc_and_page();
