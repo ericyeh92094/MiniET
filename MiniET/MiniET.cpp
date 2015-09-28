@@ -9,6 +9,7 @@
 #include <vector>
 #include <stack>
 #include <wchar.h>
+#include <stdlib.h>
 
 #include "config.h"
 #include "utf8.h"
@@ -32,7 +33,9 @@ using namespace std;
 
 void read_switch(int argc, wchar_t* argv[]);
 void read_config(string configfile, wchar_t *envp[]);
-int read_utf8_file(string filename);
+int read_file(string filename);
+int read_utf8_file(ifstream &fs8, string &firstline);
+int read_ansi_file(ifstream &fs8, string &firstline);
 int output_pdf_file(string output_file);
 int break_et_wstring(wchar_t* w_string, size_t str_size, wchar_t control_code, bool new_line);
 
@@ -55,10 +58,7 @@ int _tmain(int argc, wchar_t* argv[], wchar_t *envp[])
 	read_switch(argc, argv);
 	read_config(config_file, envp);
 
-	//wchar_t *test_file_path = (wchar_t *)target_file.c_str();
-	//wchar_t *output_path= (wchar_t *)output_file.c_str();
-
-	int line = read_utf8_file(target_file);
+	int line = read_file(target_file);
 
 	if (line == 0)
 	{
@@ -167,23 +167,44 @@ void read_config(string configfile, wchar_t *envp[])
 
 }
 
-int read_utf8_file(string filename)
+int read_file(string filename)
 {
-	// Open the test file (contains UTF-8 encoded text)
 	ifstream fs8(filename);
 	if (!fs8.is_open()) {
 		cout << "Could not open " << filename << endl;
 		return 0;
 	}
+	string line;
+	int result = 0;
 
+	if (getline(fs8, line)) // get the first line to test the signature
+	{
+		unsigned char c0 = (unsigned char)line[0];
+		unsigned char c1 = (unsigned char)line[1];
+		unsigned char c2 = (unsigned char)line[2];
+
+		if (c0 == 0xef && c1 == 0xbb && c2 == 0xbf) // UTF - 8
+		{
+			result = read_utf8_file(fs8, line);
+		}
+		else // ansi
+		{
+			result = read_ansi_file(fs8, line);
+		}
+	}
+	return result;
+}
+
+int read_utf8_file(ifstream &fs8, string &firstline)
+{
 	data_vect.clear();
 
 	unsigned line_count = 1;
-	string line;
+	string line = firstline;
 
 
 	// Play with all the lines in the file
-	while (getline(fs8, line)) {
+	do {
 
 		wchar_t *wchar_mem;
 		size_t slen = line.length();
@@ -209,7 +230,55 @@ int read_utf8_file(string filename)
 		}
 
 		line_count++;
-	}
+
+	} while (getline(fs8, line));
+
+	fs8.close();
+
+	return line_count;
+}
+
+int read_ansi_file(ifstream &fs8, string &firstline)
+{
+	data_vect.clear();
+
+	unsigned line_count = 1;
+	string line = firstline;
+
+	_locale_t loctw;
+	loctw = _create_locale(LC_ALL, "zh-TW");
+
+	// Play with all the lines in the file
+	do {
+
+		wchar_t *wchar_mem;
+		size_t slen = line.length();
+
+		if (slen > 0) {
+
+			size_t act_size = _mbstowcs_l(NULL, line.c_str(), 0, loctw); // calc the size
+			wchar_mem = new wchar_t[act_size + 1];
+			if (wchar_mem == NULL) break; // something wrong ...
+
+			size_t size = _mbstowcs_l(wchar_mem, line.c_str(), act_size, loctw); // convert to unicode
+			if (act_size == size)
+			{
+				//scanning
+				int result = break_et_wstring(wchar_mem, act_size, DEFAULT_CCODE, true);
+			}
+			else {
+				cout << "Ansi parsing error\n";
+				slen = -1; //force break
+			}
+
+			delete[] wchar_mem;
+		}
+
+		line_count++;
+
+	} while (getline(fs8, line));
+
+	fs8.close();
 
 	return line_count;
 }
