@@ -27,6 +27,7 @@
 
 #define PDF_STD_UNICODE		"Fonts\\GenShinGothic-Monospace-Normal.ttf"
 #define PDF_STD_BOLD		"Fonts\\GenShinGothic-Monospace-Bold.ttf"
+#define PDF_STD_KAI			"Fonts\\kaiu.ttf"
 #define PDF_STD_ENCODE		"UTF-8"
 
 #define PDF_DEFAULT_MARGIN_TOP		(1.0)
@@ -65,8 +66,10 @@ public:
 	HPDF_REAL MMTEXT2PTY(long nUnit) { return (HPDF_REAL)((double)nUnit * 72.0 / (double)n_log_Y); }
 	HPDF_REAL INCH2PT(float fUnit) { return (HPDF_REAL)(fUnit * 72.0); }
 
-	map< std::string, mapped_font* > mapped_font_lookup_table;
+	map< std::wstring, mapped_font* > mapped_font_lookup_table;
 	map< unsigned char, draw_symbol_function> mapped_draw_function_table;
+
+	static map< std::string, string> external_fonts;
 
 public:
 	char filename[_MAX_PATH];
@@ -92,6 +95,8 @@ public:
 	~hpdf_doc();
 
 	static void set_paper_margins(HPDF_REAL width, HPDF_REAL length, HPDF_REAL top, HPDF_REAL left, HPDF_REAL bottom, HPDF_REAL right);
+	static void add_external_font(string font_name, string font_path);
+
 	void begin_doc_and_page();
 	void end_doc();
 
@@ -112,8 +117,11 @@ public:
 	void select_eng_font();
 	void select_cjk_font();
 	void set_font_handle(HPDF_Page h_page, HPDF_Font h_font);
+	void select_datatype_font(et_type datatype);
 	void select_font(int index);
+	//void select_font(wstring font_letter);
 	void select_font(const char* fontname);
+	void select_font(wstring fontname);
 	void resize_font_boxdraw();
 	void text_out(int x, int y, wstring out_string);
 	void place_image(int x, int y, int n_destwidth, int n_destlength, int n_srcwidth, int n_srclength, const char *filename);
@@ -151,6 +159,8 @@ public:
 
 	HPDF_UINT S;      // 0 or non 0
 
+	string		c_ext_font_name, e_ext_font_name;
+
 	enum JTYPE { J_LEFT, J_MIDDLE, J_RIGHT };
 
 	HPDF_INT	LC; // 0 - 255, -1 = not set
@@ -163,6 +173,42 @@ public:
 	HPDF_REAL	line_color_r, line_color_g, line_color_b;  // Under Line, ~[H]
 	HPDF_REAL	bg_color_r, bg_color_g, bg_color_b; // Background Color, ~R
 
+	inline void hpdf_doc::use_eng_font(string font_name)
+	{
+		e_ext_font_name = font_name;
+	}
+
+	inline void hpdf_doc::use_cjk_font(string font_name)
+	{
+		c_ext_font_name = font_name;
+	}
+	inline void hpdf_doc::use_font(wstring font_letter)
+	{
+		F = (int) (font_letter[0] - L'A');
+	}
+
+};
+
+inline std::wstring StringToWstring(const std::string str)
+{// string?wstring
+	unsigned len = str.size() * 2;// ?留字??
+	setlocale(LC_CTYPE, "");     //必??用此函?
+	wchar_t *p = new wchar_t[len];// 申?一段?存存放??后的字符串
+	mbstowcs(p, str.c_str(), len);// ??
+	std::wstring str1(p);
+	delete[] p;// ?放申?的?存
+	return str1;
+};
+
+inline std::string WstringToString(const std::wstring str)
+{// wstring?string
+	unsigned len = str.size() * 4;
+	setlocale(LC_CTYPE, "");
+	char *p = new char[len];
+	wcstombs(p, str.c_str(), len);
+	std::string str1(p);
+	delete[] p;
+	return str1;
 };
 
 

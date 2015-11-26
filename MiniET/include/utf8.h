@@ -23,6 +23,7 @@
 #include <sys/types.h>
 
 #include <wchar.h>
+#include <locale.h>
 
 #define UTF8_IGNORE_ERROR		0x01
 #define UTF8_SKIP_BOM			0x02
@@ -42,6 +43,7 @@ int		isBOXDRAW(wchar_t cp);
 int		isSPACE(wchar_t cp);
 int		isFULLWIDTHSPACE(wchar_t cp);
 int		isCJKFORM(wchar_t cp);
+
 
 #ifdef __cplusplus
 }

@@ -19,6 +19,7 @@ int command::get_int(const wchar_t *code, int idx)
 		return n_end;
 }
 
+
 ///////////////////////////////////////////////////////
 // cmd_string will be changed.
 ////////////////////////////////////////////////////////
@@ -100,11 +101,80 @@ struct et_command_F : public command {
 public:
 	et_command_F() {};
 	virtual bool parse(wstring& cmd_string) {
+
+		int len = cmd_string.length();
+		if (len > 0)
+		{
+			wstring font_letter = cmd_string.substr(1, 1);
+			if (font_letter[0] == L';')
+			{
+				// font name
+				wstring font_wstr = cmd_string.substr(2, len-3);
+				string font_name = string(font_wstr.begin(), font_wstr.end());
+				doc->use_eng_font(font_name);
+				doc->use_cjk_font(font_name);
+
+				len = 0;
+			}
+			else
+				doc->use_font(font_letter);
+
+			if (len > 1)
+			{
+				cmd_string = cmd_string.substr(1, len);
+				return false;
+			}
+		}
 		return true;
 	}
 
 };
 
+//////////////////////////////////////////
+struct et_command_CF : public command {
+public:
+	et_command_CF() {};
+	virtual bool parse(wstring& cmd_string) {
+
+		int len = cmd_string.length();
+		if (len > 0)
+		{
+			wstring font_letter = cmd_string.substr(2, 1);
+			if (font_letter[0] == L';')
+			{
+				// font name
+				wstring font_wstr = cmd_string.substr(3, len - 4);
+				string font_name = string(font_wstr.begin(), font_wstr.end());
+				doc->use_cjk_font(font_name);
+			}
+		}
+		return true;
+	}
+
+};
+
+//////////////////////////////////////////
+struct et_command_EF : public command {
+public:
+	et_command_EF() {};
+	virtual bool parse(wstring& cmd_string) {
+
+		int len = cmd_string.length();
+		if (len > 0)
+		{
+			wstring font_letter = cmd_string.substr(2, 1);
+			if (font_letter[0] == L';')
+			{
+				// font name
+				wstring font_wstr = cmd_string.substr(3, len - 4);
+				string font_name = string(font_wstr.begin(), font_wstr.end());
+				doc->use_eng_font(font_name);
+			}
+		}
+		return true;
+	}
+
+};
 
 //////////////////////////////////////////
 struct et_command_W : public command {
@@ -191,7 +261,16 @@ struct et_command_V : public command {
 public:
 	et_command_V() {};
 	virtual bool parse(wstring& cmd_string) {
-		doc->VorH = 'V';
+		int len = cmd_string.length();
+		if (len > 0)
+		{
+			doc->VorH = 'V';
+			if (len > 1)
+			{
+				cmd_string = cmd_string.substr(1, len);
+				return false;
+			}
+		}
 		return true;
 	}
 
@@ -202,7 +281,56 @@ struct et_command_H : public command {
 public:
 	et_command_H() {};
 	virtual bool parse(wstring& cmd_string) {
-		doc->VorH = 'H';
+		int len = cmd_string.length();
+		if (len > 0)
+		{
+			doc->VorH = 'H';
+			if (len > 1)
+			{
+				cmd_string = cmd_string.substr(1, len);
+				return false;
+			}
+		}
+		return true;
+	}
+
+};
+
+//////////////////////////////////////////
+struct et_command_C : public command {
+public:
+	et_command_C() {};
+	virtual bool parse(wstring& cmd_string) {
+		int len = cmd_string.length();
+		if (len > 0)
+		{
+			doc->CorE = 'C';
+			if (len > 1)
+			{
+				cmd_string = cmd_string.substr(1, len);
+				return false;
+			}
+		}
+		return true;
+	}
+
+};
+
+//////////////////////////////////////////
+struct et_command_E : public command {
+public:
+	et_command_E() {};
+	virtual bool parse(wstring& cmd_string) {
+		int len = cmd_string.length();
+		if (len > 0)
+		{
+			doc->CorE = 'E';
+			if (len > 1)
+			{
+				cmd_string = cmd_string.substr(1, len);
+				return false;
+			}
+		}
 		return true;
 	}
 
@@ -221,6 +349,8 @@ public:
 
 /////////////////////////////////////////
 std::map<std::wstring, command* > command::et_lookup_table;
+std::map<std::wstring, command* > command::et_sp_lookup_table;
+
 
 void command::init_lookup_table()
 {
@@ -239,8 +369,15 @@ void command::init_lookup_table()
 	et_lookup_table[L"O"] = new et_command_O();
 	et_lookup_table[L"H"] = new et_command_H();
 	et_lookup_table[L"V"] = new et_command_V();
+	et_lookup_table[L"C"] = new et_command_C();
+	et_lookup_table[L"E"] = new et_command_E();
 	et_lookup_table[L"?"] = new et_command_QMARK();
+
+	et_sp_lookup_table[L"CF"] = new et_command_CF();
+	et_sp_lookup_table[L"EF"] = new et_command_EF();
+
 }
+
 
 bool command::dispatch_command(hpdf_doc &doc, et_datachunk& dc) //
 {
@@ -249,8 +386,23 @@ bool command::dispatch_command(hpdf_doc &doc, et_datachunk& dc) //
 	wstring command_string;
 	command_string = dc.w_string;
 
+	if (dc.type == ET_SP_COMMAND)
+	{
+		wstring cmd_name = command_string.substr(0, 2);
+
+		std::map< std::wstring, command* >::iterator iter = et_sp_lookup_table.find(cmd_name); //find the command object 
+		if (iter != et_sp_lookup_table.end()) {
+			iter->second->datachunk = &dc;
+			iter->second->doc = &doc;
+			result = iter->second->parse(command_string);
+		}
+
+		return result;
+	}
+
 	while (1)
-	{		
+	{	
+		// single char command
 		wstring cmd_name = command_string.substr(0, 1);
 		cmd_name[0] = ::towupper(cmd_name[0]);
 

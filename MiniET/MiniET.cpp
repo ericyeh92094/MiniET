@@ -10,6 +10,7 @@
 #include <stack>
 #include <wchar.h>
 #include <stdlib.h>
+#include <process.h>
 
 #include "config.h"
 #include "utf8.h"
@@ -31,31 +32,29 @@ using namespace std;
 
 #define DEFAULT_CONFIG_FILE		"miniet.config"
 
-void read_switch(int argc, wchar_t* argv[]);
+bool read_switch(int argc, wchar_t* argv[]);
 void read_config(string configfile, wchar_t *envp[]);
 int read_file(string filename);
 int read_utf8_file(ifstream &fs8, string &firstline);
 int read_ansi_file(ifstream &fs8, string &firstline);
 int output_pdf_file(string output_file);
+void output_pdf_preview(string output_file);
 int break_et_wstring(wchar_t* w_string, size_t str_size, wchar_t control_code, bool new_line);
 
 static vector<vector<et_datachunk>> data_vect;
 static std::vector<et_datachunk> data_line;
 
 static string config_file, target_file, output_file;
+static bool b_preview, b_print;
+static string s_previewer, s_preview_switches;
 
 int _tmain(int argc, wchar_t* argv[], wchar_t *envp[])
 {
 	command::init_lookup_table(); // init command dispatch table
 
-	/*
-	if (argc != 4) {
-		cout << "\nUsage: MiniET -c comfigfile filename outputPDF\n";
-		return 0;
-	}
-	*/
+	if (!read_switch(argc, argv))
+		return 0; //switch parsing error
 
-	read_switch(argc, argv);
 	read_config(config_file, envp);
 
 	int line = read_file(target_file);
@@ -69,11 +68,20 @@ int _tmain(int argc, wchar_t* argv[], wchar_t *envp[])
 
 	int pdf_line = output_pdf_file(output_file);
 
+	if (b_preview)
+		output_pdf_preview(output_file);
+
+	cout << endl << "Press <Enter> to exit this demo... ";
+	cin.get();
+
+
 	return 0;
 }
 
-void read_switch(int argc,wchar_t* argv[])
+bool read_switch(int argc,wchar_t* argv[])
 {
+	b_preview = b_print = false;
+
 	CmdLineParserEngine parser("This program converts ET encoded text to a PDF file");
 
 	CmdLineParserParameter configswitch("configswitch", "c", "set the configuration file");
@@ -86,6 +94,12 @@ void read_switch(int argc,wchar_t* argv[])
 	parser.AddExample(CmdLineParserExample("", "Switch usage: -c config target output"));
 	parser.AddExample(CmdLineParserExample("-c", "config target output"));
 
+	CmdLineParserParameter previewswitch("previewswitch", "v", "preview the output file");
+	parser.AddParameter(previewswitch);
+
+	CmdLineParserParameter printswitch("printswitch", "p", "print the output file");
+	parser.AddParameter(printswitch);
+
 	if (parser.ProcessCommandLine(argc, argv) == false)
 	{
 		cerr << "Failed to parse the command line." << endl;
@@ -93,10 +107,20 @@ void read_switch(int argc,wchar_t* argv[])
 	}
 
 	// logic is here under
-	if ((parser.GetParsedParametersCount() == 0) && (!parser.IsHelpRequested()))
-	{
-		// no parameters specified by user on the command-line, print current logins and passwords
-		cout << "Current logins and passwords are TOP SECRET." << endl;
+	if ((parser.GetParsedParametersCount() == 0) && (!parser.IsHelpRequested())) // no switch found
+	{  
+		
+		if (argc != 3) {
+			cout << "\nUsage: MiniET filename outputPDF\n";
+			return false;
+		}
+		wstring wstr;
+		wstr = argv[1];
+		target_file = string(wstr.begin(), wstr.end());
+
+		wstr = argv[2];
+		output_file = string(wstr.begin(), wstr.end());
+
 	}
 	else
 	{
@@ -122,13 +146,20 @@ void read_switch(int argc,wchar_t* argv[])
 			}
 
 		}
+		if (parser.TryGetParameter("previewswitch", param))
+		{
+			b_preview = true;
+		}
+			
+		if (parser.TryGetParameter("printswitch", param))
+		{
+			b_print = true;
+		}
+			
 	}
 end_block:
 
-	//cout << endl << "Press <Enter> to exit this demo... ";
-	//cin.get();
-
-	return;
+	return true;
 
 }
 
@@ -137,7 +168,7 @@ void read_config(string configfile, wchar_t *envp[])
 	if (configfile == "")
 		configfile = DEFAULT_CONFIG_FILE;
 
-	Config config(configfile, (char **)envp);
+	Config config(configfile, envp);
 
 	map<string, Config*> groups = config.getGroups(); // all groups
 
@@ -159,9 +190,25 @@ void read_config(string configfile, wchar_t *envp[])
 			hpdf_doc::set_paper_margins(width, length, top, left, right, bottom);
 
 		}
-		else if (groupName == "Fonts")
+		
+		if (groupName == "Fonts")
 		{
+			map<string, string>symbol = group->getSymbols();
+			string font_name, font_path;
 
+			for (map<string, string>::iterator j = symbol.begin(); j != symbol.end(); ++j)
+			{
+				font_name = j->first;
+				font_path = j->second;
+				hpdf_doc::add_external_font(font_name, font_path);
+			}
+			
+		}
+
+		if (groupName == "Preview")
+		{
+			s_previewer = group->pString("program");
+			s_preview_switches = group->pString("switches");
 		}
 	}
 
@@ -305,7 +352,7 @@ int output_pdf_file(string output_file)
 		{
 			et_datachunk &dc = *data_iter;
 			bool result = false;
-			if (dc.type == ET_COMMAND)
+			if (dc.type == ET_COMMAND || dc.type == ET_SP_COMMAND)
 			{
 				result = command::dispatch_command(*doc, dc);
 			}
@@ -322,6 +369,14 @@ int output_pdf_file(string output_file)
 	return 0;
 }
 
+void output_pdf_preview(string output_file)
+{
+	string cmd_line = "\"" + s_previewer + "\" " + s_preview_switches + " " + output_file;
+	//string cmd_line = "start \"" + s_previewer + "\" " + output_file;
+
+	system(cmd_line.c_str());
+}
+
 size_t process_command(vector<et_datachunk> &data_line, wstring w_str, size_t start, size_t str_size)
 {
 	bool in_processing = true;
@@ -334,10 +389,10 @@ size_t process_command(vector<et_datachunk> &data_line, wstring w_str, size_t st
 			size_t end = w_string.find(RIGHT_SQUARE_BRACKET, start);
 			if (end != string::npos)
 			{
-				command_string = w_string.substr(start + 1, (end - start + 1));
+				command_string = w_string.substr(start + 1, (end - start));
 				if (!command_string.empty())
 				{
-					et_datachunk dc(ET_COMMAND); // new chunk
+					et_datachunk dc(ET_SP_COMMAND); // new chunk
 					dc.w_string = command_string;
 					data_line.push_back(dc);
 

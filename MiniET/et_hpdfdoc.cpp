@@ -8,6 +8,7 @@ HPDF_REAL hpdf_doc::def_f_margin_bottom = PDF_DEFAULT_MARGIN_BOTTOM;
 HPDF_REAL hpdf_doc::def_f_margin_right = PDF_DEFAULT_MARGIN_RIGHT;
 HPDF_REAL hpdf_doc::def_f_width = PDF_DEFAULT_WIDTH;
 HPDF_REAL hpdf_doc::def_f_length = PDF_DEFAULT_LENGTH;
+map< std::string, string> hpdf_doc::external_fonts;
 
 
 void hpdf_doc::set_paper_margins(HPDF_REAL width, HPDF_REAL length, HPDF_REAL top, HPDF_REAL left, HPDF_REAL bottom, HPDF_REAL right)
@@ -47,9 +48,14 @@ hpdf_doc::~hpdf_doc()
 
 }
 
+void hpdf_doc::add_external_font(string font_name, string font_path)
+{
+	external_fonts[font_name] = font_path;
+}
+
 void hpdf_doc::init_font_table()
 {
-	string font_str("A");
+	wstring font_str(L"A");
 	const char *font_name;
 	font_name = HPDF_LoadTTFontFromFile(h_pdf, PDF_STD_UNICODE, HPDF_TRUE);
 
@@ -57,10 +63,30 @@ void hpdf_doc::init_font_table()
 
 	for (int i = 0; i < 26; i++)
 	{
-		font_str[0] = 'A' + i;
+		font_str[0] = L'A' + i;
 		mapped_font *fm = new mapped_font(font_name, PDF_STD_ENCODE);
 		fm->font_handle = font;
 		mapped_font_lookup_table[font_str] = fm;
+	}
+
+	font_name = HPDF_LoadTTFontFromFile(h_pdf, PDF_STD_KAI, HPDF_TRUE);
+	font = HPDF_GetFont(h_pdf, font_name, PDF_STD_ENCODE);
+	
+	mapped_font *kai_fm = new mapped_font(font_name, PDF_STD_ENCODE);
+	kai_fm->font_handle = font;
+	mapped_font_lookup_table[L"K"] = kai_fm;
+
+	for (map<string, string>::iterator j = external_fonts.begin(); j != external_fonts.end(); ++j)
+	{
+		wstring font_letter = StringToWstring(j->first);
+		string font_path = j->second;
+
+		font_name = HPDF_LoadTTFontFromFile(h_pdf, font_path.c_str(), HPDF_TRUE);
+		font = HPDF_GetFont(h_pdf, font_name, PDF_STD_ENCODE);
+
+		mapped_font *fm = new mapped_font(font_name, PDF_STD_ENCODE);
+		fm->font_handle = font;
+		mapped_font_lookup_table[font_letter] = fm;
 	}
 }
 
@@ -153,6 +179,8 @@ void hpdf_doc::init(int p_code)
 	T = 24;
 
 	F = 0; // FA
+	c_ext_font_name = e_ext_font_name = "";
+
 	R = 1;
 	VorH = 'H';
 	CorE = 'E';
@@ -264,9 +292,10 @@ void hpdf_doc::add_text(et_type datatype, wstring out_string)
 	if (f_space > f_linespace)
 		f_linespace = f_space;
 
+	select_datatype_font(datatype);
+
 	switch (datatype) {
 	case ET_LATAN:
-		select_eng_font();
 		size = _wcstombs_l(line, out_string.c_str(), 4096, loceng);
 		if (size == 0) goto END_PROC;
 
@@ -281,7 +310,6 @@ void hpdf_doc::add_text(et_type datatype, wstring out_string)
 	case ET_CJKFORM:
 	case ET_CJK:
 	case ET_BOXDRAW:
-		select_cjk_font();
 
 		if (datatype == ET_BOXDRAW) resize_font_boxdraw();
 		size = wchar_to_utf8(out_string.c_str(), out_string.length(), line, 4096, NULL);
@@ -319,17 +347,44 @@ void hpdf_doc::new_line()
 	f_linespace = space;
 }
 
+void hpdf_doc::select_datatype_font(et_type datatype)
+{
+	switch (datatype) {
+	case ET_LATAN:
+	case ET_SPACE:
+		CorE == 'E' ? select_eng_font() : select_cjk_font();
+		break;
+
+	case ET_CJKFORM:
+	case ET_CJK:
+	case ET_BOXDRAW:
+		select_cjk_font();
+		break;
+	}
+}
+
 void hpdf_doc::select_eng_font()
 {
-	h_current_font = HPDF_GetFont(h_pdf, PDF_STD_ANSI, NULL);
+	wstring font_str = StringToWstring(e_ext_font_name);
 
-	if (h_current_page != 0)
-		set_font_handle(h_current_page, h_current_font);
+	if (e_ext_font_name != "")
+		select_font(font_str);
+	else {
+		h_current_font = HPDF_GetFont(h_pdf, PDF_STD_ANSI, NULL);
+
+		if (h_current_page != 0)
+			set_font_handle(h_current_page, h_current_font);
+	}
 }
 
 void hpdf_doc::select_cjk_font()
 {
-	select_font(F);
+	wstring font_str = StringToWstring(c_ext_font_name);
+
+	if (c_ext_font_name != "")
+		select_font(font_str);
+	else
+		select_font(F);
 
 }
 
@@ -358,13 +413,37 @@ void hpdf_doc::set_font_handle(HPDF_Page h_page, HPDF_Font h_font)
 
 void hpdf_doc::select_font(int font_index)
 {
-	string font_str("A");
+	wstring font_str(L"A");
      
 	if (font_index < 0 || font_index > 25) // invalid index
 		return;
 
-	font_str[0] = 'A' + font_index;
-	map< std::string, mapped_font* >::iterator iter = mapped_font_lookup_table.find(font_str); //find the font index 
+	font_str[0] = L'A' + font_index;
+	map< std::wstring, mapped_font* >::iterator iter = mapped_font_lookup_table.find(font_str); //find the font index 
+	if (iter != mapped_font_lookup_table.end()) {
+		h_current_font = iter->second->font_handle;
+		set_font_handle(h_current_page, h_current_font);
+	}
+}
+
+/*
+void hpdf_doc::select_font(wstring font_letter)
+{
+
+	if (font_letter[0] < L'A' || font_letter[0] > L'Z') // invalid index
+		return;
+
+	map< std::wstring, mapped_font* >::iterator iter = mapped_font_lookup_table.find(font_letter); //find the font index 
+	if (iter != mapped_font_lookup_table.end()) {
+		h_current_font = iter->second->font_handle;
+		set_font_handle(h_current_page, h_current_font);
+	}
+}
+*/
+
+void hpdf_doc::select_font(wstring font_name)
+{
+	map< std::wstring, mapped_font* >::iterator iter = mapped_font_lookup_table.find(font_name); //find the font index 
 	if (iter != mapped_font_lookup_table.end()) {
 		h_current_font = iter->second->font_handle;
 		set_font_handle(h_current_page, h_current_font);

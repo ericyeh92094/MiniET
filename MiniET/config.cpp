@@ -11,15 +11,20 @@ Config::Config(string name, string parentDebugInfo) {
 	debugInfo = parentDebugInfo + ", " + name;
 }
 
-Config::Config(string configFile, char** envp) {
+Config::Config(string configFile, wchar_t** envp) {
 	while (*envp) {
-		string envEntry = *envp;
+		wstring envEntry = *envp;
 		size_t pos = envEntry.find('=');
 		if (pos != string::npos) {
-			string name = envEntry.substr(0, pos);
-			string value = envEntry.substr(pos+1, string::npos);
+			wstring ws;
+			ws = envEntry.substr(0, pos);
+			string name = string(ws.begin(), ws.end());
+
+			ws = envEntry.substr(pos+1, wstring::npos);			
+			string value = string(ws.begin(), ws.end());
+
 			envSymbols[name] = value;
-			logDebug(cout << "environment symbol: '" << name << "' = '" << value << "'" << endl);
+			//logDebug(cout << "environment symbol: '" << name << "' = '" << value << "'" << endl);
 		}
 		++envp;
 	}

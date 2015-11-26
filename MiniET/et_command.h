@@ -16,6 +16,7 @@ struct command {
 public:
 	static void init_lookup_table();
 	static std::map< std::wstring, command* > et_lookup_table;
+	static std::map< std::wstring, command* > et_sp_lookup_table;
 
 	et_datachunk* datachunk;
 	hpdf_doc* doc;
