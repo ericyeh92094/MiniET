@@ -67,7 +67,10 @@ int isBASICLATAN(wchar_t cp)
 
 int isCJK(wchar_t cp)
 {
-	return ((cp >= 0x2e00) && (cp <= 0x9fff));
+//	return ((cp >= 0x2e00) && (cp <= 0x9fff));
+	return ((cp >= 0x2e00) && (cp <= 0x9fff) ||
+		(cp >= 0xac00) && (cp <= 0xd7ff) ||
+		(cp >= 0xf900) && (cp <= 0xfffd));
 }
 
 int isBOXDRAW(wchar_t cp)
@@ -87,7 +90,7 @@ int isFULLWIDTHSPACE(wchar_t cp)
 
 int isCJKFORM(wchar_t cp)
 {
-	return ((cp >= 0xfe30) && (cp <= 0xfe4f)) || ((cp >= 0xff00) && (cp <= 0xffee)) || ((cp >= 0x2190) && (cp <= 0x21ff));
+	return ((cp >= 0xfe30) && (cp <= 0xfe4f)) || ((cp >= 0xff00) && (cp <= 0xffef)) || ((cp >= 0x2190) && (cp <= 0x21ff) || ((cp >= 0x2580) && (cp <= 0x25ff)));
 }
 
 /*

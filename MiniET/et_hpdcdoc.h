@@ -25,7 +25,7 @@
 #define PDF_ENCODE_JPN_V	"90ms-RKSJ-V"
 #define PDF_ENCODE_KOR_V	"KSCms-UHC-HW-V"
 
-#define PDF_STD_UNICODE		"Fonts\\GenShinGothic-Monospace-Normal.ttf"
+#define PDF_STD_UNICODE		"Fonts\\GenShinGothic-Normal.ttf"
 #define PDF_STD_BOLD		"Fonts\\GenShinGothic-Monospace-Bold.ttf"
 #define PDF_STD_KAI			"Fonts\\kaiu.ttf"
 #define PDF_STD_ENCODE		"UTF-8"
@@ -113,6 +113,7 @@ public:
 	void horizontal(HPDF_REAL xpos, HPDF_REAL ypos);
 	void add_text(et_type datatype, wstring out_string);
 	void new_line();
+	void text_goto(int px, int py);
 
 	void select_eng_font();
 	void select_cjk_font();
@@ -123,7 +124,8 @@ public:
 	void select_font(const char* fontname);
 	void select_font(wstring fontname);
 	void resize_font_boxdraw();
-	void text_out(int x, int y, wstring out_string);
+	void text_out_eng(HPDF_REAL& f_xpos, HPDF_REAL& f_ypos, wstring out_string, HPDF_REAL& f_advance, HPDF_REAL f_width, HPDF_REAL f_gap, HPDF_REAL f_space, _locale_t loceng);
+	void text_out_cjk(HPDF_REAL& f_xpos, HPDF_REAL& f_ypos, wstring out_string, HPDF_REAL& f_advance, HPDF_REAL f_width, HPDF_REAL f_gap, HPDF_REAL f_space);
 	void place_image(int x, int y, int n_destwidth, int n_destlength, int n_srcwidth, int n_srclength, const char *filename);
 
 	void polygon(HPDF_Point pt[], int count);

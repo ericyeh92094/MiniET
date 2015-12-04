@@ -81,10 +81,32 @@ struct et_command_P : public command {
 public:
 	et_command_P() {};
 	virtual bool parse(wstring& cmd_string) {
-		return true;
+		return process_single_param(cmd_string, doc->P);
 	}
 };
 
+/////////////////////////////////////////
+struct et_command_SP_P : public command { // [P;dd;dd]
+public:
+	et_command_SP_P() {};
+	virtual bool parse(wstring& cmd_string) {
+		int len = cmd_string.length();
+		if (len > 0)
+		{
+			wstring code_str = cmd_string.substr(1, len);
+			if (code_str[0] == L';')
+			{
+				int px = 0, py = 0;
+				if (swscanf(code_str.c_str(), L";%d;%d", &px, &py) == 2)
+				{
+					doc->text_goto(px, py);
+				}
+			}
+			
+		}
+		return true;
+	}
+};
 
 //////////////////////////////////////////
 struct et_command_S : public command {
@@ -375,6 +397,8 @@ void command::init_lookup_table()
 
 	et_sp_lookup_table[L"CF"] = new et_command_CF();
 	et_sp_lookup_table[L"EF"] = new et_command_EF();
+	et_sp_lookup_table[L"P"] = new et_command_SP_P();
+	et_sp_lookup_table[L"p"] = new et_command_SP_P();
 
 }
 
@@ -388,7 +412,12 @@ bool command::dispatch_command(hpdf_doc &doc, et_datachunk& dc) //
 
 	if (dc.type == ET_SP_COMMAND)
 	{
-		wstring cmd_name = command_string.substr(0, 2);
+		size_t pos = command_string.find(L";", 0);
+
+		if (pos == string::npos) // find no ;
+			return result;
+
+		wstring cmd_name = command_string.substr(0, pos);
 
 		std::map< std::wstring, command* >::iterator iter = et_sp_lookup_table.find(cmd_name); //find the command object 
 		if (iter != et_sp_lookup_table.end()) {

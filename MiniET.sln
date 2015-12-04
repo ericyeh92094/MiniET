@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MiniET", "MiniET\MiniET.vcxproj", "{D293951E-60CB-4358-84F9-053BA3E40440}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "MiniETSetup", "MiniETSetup\MiniETSetup.vdproj", "{B45EE273-7E04-4F07-BFFD-CACBEE40DED6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -15,6 +17,8 @@ Global
 		{D293951E-60CB-4358-84F9-053BA3E40440}.Debug|Win32.Build.0 = Debug|Win32
 		{D293951E-60CB-4358-84F9-053BA3E40440}.Release|Win32.ActiveCfg = Debug|Win32
 		{D293951E-60CB-4358-84F9-053BA3E40440}.Release|Win32.Build.0 = Debug|Win32
+		{B45EE273-7E04-4F07-BFFD-CACBEE40DED6}.Debug|Win32.ActiveCfg = Debug
+		{B45EE273-7E04-4F07-BFFD-CACBEE40DED6}.Release|Win32.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

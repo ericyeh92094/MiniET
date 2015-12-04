@@ -45,8 +45,9 @@ static vector<vector<et_datachunk>> data_vect;
 static std::vector<et_datachunk> data_line;
 
 static string config_file, target_file, output_file;
-static bool b_preview, b_print;
+static bool b_preview, b_print, b_bom;
 static string s_previewer, s_preview_switches;
+static string s_codepage;
 
 int _tmain(int argc, wchar_t* argv[], wchar_t *envp[])
 {
@@ -81,6 +82,7 @@ int _tmain(int argc, wchar_t* argv[], wchar_t *envp[])
 bool read_switch(int argc,wchar_t* argv[])
 {
 	b_preview = b_print = false;
+	b_bom = true;
 
 	CmdLineParserEngine parser("This program converts ET encoded text to a PDF file");
 
@@ -99,6 +101,14 @@ bool read_switch(int argc,wchar_t* argv[])
 
 	CmdLineParserParameter printswitch("printswitch", "p", "print the output file");
 	parser.AddParameter(printswitch);
+
+	CmdLineParserParameter cpswitch("cpswitch", "cp", "code page setting");
+	cpswitch.AddArgument(CmdLineParserArgument("codepage", "CODEPAGE"));
+
+	parser.AddParameter(cpswitch);
+
+	CmdLineParserParameter bomswitch("bomswitch", "nobom", "UTF BOM setting");
+	parser.AddParameter(bomswitch);
 
 	if (parser.ProcessCommandLine(argc, argv) == false)
 	{
@@ -155,7 +165,18 @@ bool read_switch(int argc,wchar_t* argv[])
 		{
 			b_print = true;
 		}
-			
+
+		if (parser.TryGetParameter("cpswitch", param))
+		{
+			if (param.TryGetArgument("codepage", argument))
+				s_codepage = "." + argument.m_sContent;
+		}
+
+		if (parser.TryGetParameter("bomswitch", param))
+		{
+			b_bom = false;
+		}
+
 	}
 end_block:
 
@@ -223,6 +244,8 @@ int read_file(string filename)
 	}
 	string line;
 	int result = 0;
+	bool isUTF8 = false;
+	if (s_codepage == ".65001") isUTF8 = true;
 
 	if (getline(fs8, line)) // get the first line to test the signature
 	{
@@ -230,7 +253,7 @@ int read_file(string filename)
 		unsigned char c1 = (unsigned char)line[1];
 		unsigned char c2 = (unsigned char)line[2];
 
-		if (c0 == 0xef && c1 == 0xbb && c2 == 0xbf) // UTF - 8
+		if ((c0 == 0xef && c1 == 0xbb && c2 == 0xbf) || isUTF8) // UTF - 8
 		{
 			result = read_utf8_file(fs8, line);
 		}
@@ -248,6 +271,7 @@ int read_utf8_file(ifstream &fs8, string &firstline)
 
 	unsigned line_count = 1;
 	string line = firstline;
+	int utf_flag = b_bom ? 0 : UTF8_SKIP_BOM;
 
 
 	// Play with all the lines in the file
@@ -262,7 +286,7 @@ int read_utf8_file(ifstream &fs8, string &firstline)
 			wchar_mem = new wchar_t[act_size];
 			if (wchar_mem == NULL) break; // something wrong ...
 
-			size_t size = utf8_to_wchar(line.c_str(), slen, wchar_mem, act_size, 0 /*UTF8_SKIP_BOM*/); // convert to unicode
+			size_t size = utf8_to_wchar(line.c_str(), slen, wchar_mem, act_size, utf_flag); // convert to unicode
 			if (act_size == size)
 			{
 				//scanning
@@ -290,10 +314,13 @@ int read_ansi_file(ifstream &fs8, string &firstline)
 	data_vect.clear();
 
 	unsigned line_count = 1;
-	string line = firstline;
+	string line = firstline, language_str = "zh-TW";
+
+	if (s_codepage.length() > 0)
+		language_str = s_codepage;
 
 	_locale_t loctw;
-	loctw = _create_locale(LC_ALL, "zh-TW");
+	loctw = _create_locale(LC_ALL, language_str.c_str());
 
 	// Play with all the lines in the file
 	do {
@@ -493,6 +520,7 @@ size_t process_datachunk(vector<et_datachunk> &data_line, wstring &w_string, siz
 int break_et_wstring(wchar_t *w_str, size_t str_size, wchar_t control_code, bool new_line = true)
 {
 	size_t start = 0;
+	int da_count = 0, co_count = 0;
 
 	if (new_line)
 		data_line.clear();
@@ -517,29 +545,35 @@ int break_et_wstring(wchar_t *w_str, size_t str_size, wchar_t control_code, bool
 			}
 			// command processing
 			start = process_command(data_line, w_string, start + 1, str_size);
+			co_count++;
 			
 		}
 
 		else if (isCJKFORM(cp))
 		{
 			start = process_datachunk(data_line, w_string, start, str_size, ET_CJKFORM);
+			da_count++;
 		}
-		else if (isCJK(cp))
+		else if (isCJK(cp) || isFULLWIDTHSPACE(cp))
 		{
 			start = process_datachunk(data_line, w_string, start, str_size, ET_CJK);
+			da_count++;
 		}
 		else if (isBOXDRAW(cp))
 		{
 			start = process_datachunk(data_line, w_string, start, str_size, ET_BOXDRAW);
+			da_count++;
 		}
 		else if (isSPACE(cp))
 		{
 			start = process_datachunk(data_line, w_string, start, str_size, ET_SPACE);
+			da_count++;
 		}
 		else /* if (isBASICLATAN(cp)) */
 		{
 		LATAN_PROC:
 			start = process_datachunk(data_line, w_string, start, str_size, ET_LATAN);
+			da_count++;
 		}
 	}
 

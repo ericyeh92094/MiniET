@@ -94,7 +94,7 @@ void hpdf_doc::begin_doc_and_page()
 {
 	init_font_table();
 
-	init(9); //default P9
+	init(9); //default P300
 	new_page(); // the first page added
 
 	h_current_font = HPDF_GetFont(h_pdf, PDF_STD_CHT, PDF_ENCODE_CHT_H);
@@ -286,8 +286,9 @@ void hpdf_doc::add_text(et_type datatype, wstring out_string)
 		n_TY = (TY > 0) ? TY : T;
 
 	HPDF_REAL f_advance = 0.0;
-	HPDF_REAL f_width = MMTEXT2PTX(W * n_TX / 2 + X / 2);
-	HPDF_REAL f_space = MMTEXT2PTY(Z * n_TY + L);
+	HPDF_REAL f_width = MMTEXT2PTX(W * n_TX / 2);
+	HPDF_REAL f_gap = MMTEXT2PTX(X/2);
+	HPDF_REAL f_space = MMTEXT2PTY((Z * n_TY) + L);
 
 	if (f_space > f_linespace)
 		f_linespace = f_space;
@@ -296,15 +297,18 @@ void hpdf_doc::add_text(et_type datatype, wstring out_string)
 
 	switch (datatype) {
 	case ET_LATAN:
+	
+		
 		size = _wcstombs_l(line, out_string.c_str(), 4096, loceng);
 		if (size == 0) goto END_PROC;
 
 		HPDF_Page_TextOut(h_current_page, f_xpos, f_ypos - f_linespace, line);
-		f_advance += (len * f_width);
-			
+		f_advance = (len * (f_width + f_gap)); //HPDF_Page_TextWidth(h_current_page, line); 
+		
+		//text_out_eng(f_xpos, f_ypos, out_string, f_advance, f_width, f_gap, f_space, loceng);
 		break;
 	case ET_SPACE:
-		f_advance += (f_width * len);
+		f_advance += ((f_width + f_gap) * len);
 		break;
 
 	case ET_CJKFORM:
@@ -312,11 +316,17 @@ void hpdf_doc::add_text(et_type datatype, wstring out_string)
 	case ET_BOXDRAW:
 
 		if (datatype == ET_BOXDRAW) resize_font_boxdraw();
+		/*
 		size = wchar_to_utf8(out_string.c_str(), out_string.length(), line, 4096, NULL);
 		if (size == 0) goto END_PROC;
 		
 		HPDF_Page_TextOut(h_current_page, f_xpos, f_ypos - f_linespace, line);
-		f_advance += (len * f_width * 2);
+		//if (datatype == ET_BOXDRAW)
+		//	f_advance += (len * ((f_width + f_gap) * 2));
+		//else
+			f_advance += HPDF_Page_TextWidth(h_current_page, line); //(len * ((f_width + f_gap) * 2));
+			*/
+		text_out_cjk(f_xpos, f_ypos, out_string, f_advance, f_width, f_gap, f_space);
 
 		break;
 	}
@@ -345,6 +355,15 @@ void hpdf_doc::new_line()
 	f_ypos -= f_linespace;
 
 	f_linespace = space;
+}
+
+void hpdf_doc::text_goto(int px, int py)
+{
+	px = (int)((float)px / (float)1000 * (float)n_log_X);
+	py = (int)((float)py / (float)1000 * (float)n_log_Y);
+	f_xpos = px;// -f_margin_x;
+	f_ypos = f_length - py;// +f_margin_y;
+
 }
 
 void hpdf_doc::select_datatype_font(et_type datatype)
@@ -426,20 +445,6 @@ void hpdf_doc::select_font(int font_index)
 	}
 }
 
-/*
-void hpdf_doc::select_font(wstring font_letter)
-{
-
-	if (font_letter[0] < L'A' || font_letter[0] > L'Z') // invalid index
-		return;
-
-	map< std::wstring, mapped_font* >::iterator iter = mapped_font_lookup_table.find(font_letter); //find the font index 
-	if (iter != mapped_font_lookup_table.end()) {
-		h_current_font = iter->second->font_handle;
-		set_font_handle(h_current_page, h_current_font);
-	}
-}
-*/
 
 void hpdf_doc::select_font(wstring font_name)
 {
@@ -467,28 +472,57 @@ void hpdf_doc::resize_font_boxdraw()
 		int n_TX = (TX > 0) ? TX : T,
 			n_TY = (TY > 0) ? TY : T;
 
-		HPDF_REAL font_height = MMTEXT2PTX(Z * n_TY + L);
-		HPDF_REAL font_width = MMTEXT2PTX(W * n_TX / 2 + X/2);
+		HPDF_REAL font_height = MMTEXT2PTX((Z * n_TY) +L);
+		HPDF_REAL font_width = MMTEXT2PTX((W * n_TX / 2) +(X / 2));
 		HPDF_REAL ratio = 100.0;
-		if (font_width >= font_height)
-		{
-			ratio = (HPDF_REAL) (200.0 * font_width / font_height);
-		}
+		
+		ratio = (HPDF_REAL) ((double)(200.0 * font_width) / font_height);
 
 		HPDF_Page_SetFontAndSize(h_current_page, h_current_font, font_height);
 		HPDF_Page_SetHorizontalScalling(h_current_page, ratio);
-
 	}
 }
 
-void hpdf_doc::text_out(int x, int y, wstring out_string)
+
+void hpdf_doc::text_out_cjk(HPDF_REAL& f_xpos, HPDF_REAL& f_ypos, wstring out_string, HPDF_REAL& f_advance, HPDF_REAL f_width, HPDF_REAL f_gap, HPDF_REAL f_space)
 {
-	
+	char line[4];
+	memset(line, 0, 4);
+
+	int len = out_string.length();
+
+	for (int i = 0; i < len; i++)
+	{
+		wchar_t out_wchar = out_string[i];
+		size_t size = wchar_to_utf8(&out_wchar, 1, line, 4, NULL);
+		if (size == 0) break;
+
+		HPDF_Page_TextOut(h_current_page, f_xpos + f_advance, f_ypos - f_linespace, line);
+		f_advance += (f_width + f_gap) * 2;
+	}
+}
+
+void hpdf_doc::text_out_eng(HPDF_REAL& f_xpos, HPDF_REAL& f_ypos, wstring out_string, HPDF_REAL& f_advance, HPDF_REAL f_width, HPDF_REAL f_gap, HPDF_REAL f_space, _locale_t loceng)
+{
+	char line[4];
+
+	int len = out_string.length();
+
+	for (int i = 0; i < len; i++)
+	{
+		wchar_t out_wchar = out_string[i];
+		memset(line, 0, 4);
+
+		size_t size = _wcstombs_l(line, &out_wchar, 1, loceng);
+		if (size == 0) break;
+
+		HPDF_Page_TextOut(h_current_page, f_xpos + f_advance, f_ypos - f_linespace, line);
+		f_advance += (f_width + f_gap);
+	}
 }
 
 void hpdf_doc::place_image(int x, int y, int n_destwidth, int n_destlength, int n_srcwidth, int n_srclength, const char *filename)
 {
-
 }
 
 void hpdf_doc::polygon(HPDF_Point pt[], int count)
