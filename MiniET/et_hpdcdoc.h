@@ -25,7 +25,7 @@
 #define PDF_ENCODE_JPN_V	"90ms-RKSJ-V"
 #define PDF_ENCODE_KOR_V	"KSCms-UHC-HW-V"
 
-#define PDF_STD_UNICODE		"Fonts\\GenShinGothic-Normal.ttf"
+#define PDF_STD_UNICODE		"Fonts\\GenShinGothic-Monospace-Normal.ttf"
 #define PDF_STD_BOLD		"Fonts\\GenShinGothic-Monospace-Bold.ttf"
 #define PDF_STD_KAI			"Fonts\\kaiu.ttf"
 #define PDF_STD_ENCODE		"UTF-8"
@@ -50,6 +50,7 @@ public:
 	mapped_font(const char*name, const char* encoding) { strcpy(font_name, name); strcpy(font_encoding, encoding); font_handle = NULL; };
 };
 
+
 class hpdf_doc {
 
 public:
@@ -62,9 +63,12 @@ public:
 
 	typedef void(*draw_symbol_function)(int line_width, int lw, int x, int y, int x1, int y1, int x2, int y2, int w, int h, int w1, int h1, int w2, int h2);
 
-	HPDF_REAL MMTEXT2PTX(long nUnit) { return (HPDF_REAL)((double)nUnit * 72.0 / (double)n_log_X); }
-	HPDF_REAL MMTEXT2PTY(long nUnit) { return (HPDF_REAL)((double)nUnit * 72.0 / (double)n_log_Y); }
-	HPDF_REAL INCH2PT(float fUnit) { return (HPDF_REAL)(fUnit * 72.0); }
+	inline HPDF_REAL MMTEXT2PTX(long nUnit) { return (HPDF_REAL)((double)nUnit * 72.0 / (double)n_log_X); }
+	inline HPDF_REAL MMTEXT2PTY(long nUnit) { return (HPDF_REAL)((double)nUnit * 72.0 / (double)n_log_Y); }
+	inline HPDF_REAL D2PTX(long nUnit) { return (HPDF_REAL)((double)nUnit * 72.0 / ((double)n_log_X * 1000L)); }
+	inline HPDF_REAL D2PTY(long nUnit) { return (HPDF_REAL)((double)nUnit * 72.0 / ((double)n_log_Y * 1000L)); }
+
+	inline HPDF_REAL INCH2PT(float fUnit) { return (HPDF_REAL)(fUnit * 72.0); }
 
 	map< std::wstring, mapped_font* > mapped_font_lookup_table;
 	map< unsigned char, draw_symbol_function> mapped_draw_function_table;
@@ -82,6 +86,14 @@ public:
 
 	HPDF_REAL f_width, f_length;
 	HPDF_REAL f_margin_x, f_margin_y;
+
+	HPDF_REAL f_page_width;
+	HPDF_REAL f_page_length;
+	HPDF_REAL f_margin_top;
+	HPDF_REAL f_margin_left;
+	HPDF_REAL f_margin_bottom;
+	HPDF_REAL f_margin_right;
+
 	HPDF_REAL f_xpos, f_ypos;
 	HPDF_REAL f_linespace;
 
@@ -95,6 +107,8 @@ public:
 	~hpdf_doc();
 
 	static void set_paper_margins(HPDF_REAL width, HPDF_REAL length, HPDF_REAL top, HPDF_REAL left, HPDF_REAL bottom, HPDF_REAL right);
+	void set_paper_margin(wchar_t margin_indicator, HPDF_INT32 n_margin); // MMTEXT
+
 	static void add_external_font(string font_name, string font_path);
 
 	void begin_doc_and_page();
@@ -154,12 +168,13 @@ public:
 		GT,     // 1: Top, 2: Middle, 3: Bottom
 		B,      // 0 to 6 (0 default)
 		J,      // 0 - Left, 1 - Middle, 2 - Right, 3 - (reserved)
+		O,		// 0 - 15 color level
 		TX, TY; // 16 - 4096, 0 = not set
 	HPDF_INT
 		L,      // -255..255
 		X;      // -255..255
 
-	HPDF_UINT S;      // 0 or non 0
+	HPDF_INT S;      // 0 or non 0
 
 	string		c_ext_font_name, e_ext_font_name;
 

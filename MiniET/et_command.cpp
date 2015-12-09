@@ -109,16 +109,6 @@ public:
 };
 
 //////////////////////////////////////////
-struct et_command_S : public command {
-public:
-	et_command_S() {};
-	virtual bool parse(wstring& cmd_string) {
-		return true;
-	}
-
-};
-
-//////////////////////////////////////////
 struct et_command_F : public command {
 public:
 	et_command_F() {};
@@ -199,6 +189,31 @@ public:
 };
 
 //////////////////////////////////////////
+struct et_command_MX : public command {
+public:
+	et_command_MX() {};
+	virtual bool parse(wstring& cmd_string) {
+
+		int len = cmd_string.length();
+		if (len > 0)
+		{
+			wstring delim = cmd_string.substr(2, 1);
+			wstring margin_indicator = cmd_string.substr(1, 1); // L, T, R, B
+			wstring margin_str = cmd_string.substr(3, len);
+			long n_margin = _wtol(margin_str.c_str());
+
+			if (delim[0] == L';')
+			{
+				doc->set_paper_margin(margin_indicator[0], (HPDF_INT32)n_margin);
+			}
+		}
+		return true;
+	}
+
+};
+
+
+//////////////////////////////////////////
 struct et_command_W : public command {
 public:
 	et_command_W() {};
@@ -247,6 +262,16 @@ public:
 
 };
 
+//////////////////////////////////////////
+struct et_command_S : public command {
+public:
+	et_command_S() {};
+	virtual bool parse(wstring& cmd_string) {
+		return process_single_param(cmd_string, doc->S);
+	}
+
+};
+
 
 //////////////////////////////////////////
 struct et_command_U : public command {
@@ -273,7 +298,7 @@ struct et_command_O : public command {
 public:
 	et_command_O() {};
 	virtual bool parse(wstring& cmd_string) {
-		return true;
+		return process_single_param(cmd_string, doc->O);
 	}
 
 };
@@ -399,6 +424,11 @@ void command::init_lookup_table()
 	et_sp_lookup_table[L"EF"] = new et_command_EF();
 	et_sp_lookup_table[L"P"] = new et_command_SP_P();
 	et_sp_lookup_table[L"p"] = new et_command_SP_P();
+	et_sp_lookup_table[L"ML"] = new et_command_MX();
+	et_sp_lookup_table[L"MT"] = new et_command_MX();
+	et_sp_lookup_table[L"MR"] = new et_command_MX();
+	et_sp_lookup_table[L"MB"] = new et_command_MX();
+
 
 }
 

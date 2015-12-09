@@ -3,6 +3,12 @@
 
 #include "stdafx.h"
 
+#ifdef WIN32
+#include <windows.h>
+#include <Tlhelp32.h>
+#include <winbase.h>
+#endif
+
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -39,6 +45,7 @@ int read_utf8_file(ifstream &fs8, string &firstline);
 int read_ansi_file(ifstream &fs8, string &firstline);
 int output_pdf_file(string output_file);
 void output_pdf_preview(string output_file);
+void output_pdf_printing(string output_file);
 int break_et_wstring(wchar_t* w_string, size_t str_size, wchar_t control_code, bool new_line);
 
 static vector<vector<et_datachunk>> data_vect;
@@ -46,7 +53,7 @@ static std::vector<et_datachunk> data_line;
 
 static string config_file, target_file, output_file;
 static bool b_preview, b_print, b_bom;
-static string s_previewer, s_preview_switches;
+static string s_previewer, s_preview_switches, s_printer, s_printer_switches, s_printername, s_drivername, s_portname;
 static string s_codepage;
 
 int _tmain(int argc, wchar_t* argv[], wchar_t *envp[])
@@ -62,8 +69,7 @@ int _tmain(int argc, wchar_t* argv[], wchar_t *envp[])
 
 	if (line == 0)
 	{
-		cout << "Error reading file\n";
-		return 0;
+		return -1;
 	}
 	//start producing the PDF file
 
@@ -72,8 +78,11 @@ int _tmain(int argc, wchar_t* argv[], wchar_t *envp[])
 	if (b_preview)
 		output_pdf_preview(output_file);
 
-	cout << endl << "Press <Enter> to exit this demo... ";
-	cin.get();
+	if (b_print)
+		output_pdf_printing(output_file);
+
+	//cout << endl << "Press <Enter> to exit this demo... ";
+	//cin.get();
 
 
 	return 0;
@@ -222,8 +231,7 @@ void read_config(string configfile, wchar_t *envp[])
 				font_name = j->first;
 				font_path = j->second;
 				hpdf_doc::add_external_font(font_name, font_path);
-			}
-			
+			}		
 		}
 
 		if (groupName == "Preview")
@@ -231,8 +239,141 @@ void read_config(string configfile, wchar_t *envp[])
 			s_previewer = group->pString("program");
 			s_preview_switches = group->pString("switches");
 		}
+
+		if (groupName == "Printing")
+		{
+			s_printer = group->pString("program");
+			s_printer_switches = group->pString("switches");
+			s_printername = group->pString("printername");
+			s_drivername = group->pString("drivername");
+			s_portname = group->pString("portname");
+		}
 	}
 
+}
+
+#ifdef WIN32
+void killProcessByName(const wchar_t *filename)
+{
+	wchar_t drive[_MAX_DRIVE];
+	wchar_t dir[_MAX_DIR];
+	wchar_t fname[_MAX_FNAME];
+	wchar_t ext[_MAX_EXT];
+
+	_wsplitpath(filename, drive, dir, fname, ext);
+	wcscat(fname, ext);
+
+
+	HANDLE hSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPALL, NULL);
+	PROCESSENTRY32 pEntry;
+	pEntry.dwSize = sizeof(pEntry);
+	BOOL hRes = Process32First(hSnapShot, &pEntry);
+	while (hRes)
+	{
+		if (wcscmp(pEntry.szExeFile, fname) == 0)
+		{
+			HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, 0,
+				(DWORD)pEntry.th32ProcessID);
+			if (hProcess != NULL)
+			{
+				TerminateProcess(hProcess, 9);
+				CloseHandle(hProcess);
+			}
+		}
+		hRes = Process32Next(hSnapShot, &pEntry);
+	}
+	CloseHandle(hSnapShot);
+}
+#endif
+
+void output_pdf_preview(string output_file)
+{
+#ifndef WIN32
+	string cmd_line = "\"\"" + s_previewer + "\" " + s_preview_switches + " " + output_file + "\"";
+
+	system(cmd_line.c_str());
+#else
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	ZeroMemory(&pi, sizeof(pi));
+
+	wstring cmd_line = L"\"" + StringToWstring(s_previewer) + L"\" " + StringToWstring(s_preview_switches) + L" " + StringToWstring(output_file);
+
+	// Start the child process. 
+	if (!CreateProcess(NULL,   // No module name (use command line)
+		(LPWSTR) cmd_line.c_str(),        // Command line
+		NULL,           // Process handle not inheritable
+		NULL,           // Thread handle not inheritable
+		FALSE,          // Set handle inheritance to FALSE
+		0,              // No creation flags
+		NULL,           // Use parent's environment block
+		NULL,           // Use parent's starting directory 
+		&si,            // Pointer to STARTUPINFO structure
+		&pi)           // Pointer to PROCESS_INFORMATION structure
+		)
+	{
+		return;
+	}
+
+	// Wait until child process exits.
+	WaitForSingleObject(pi.hProcess, INFINITE);
+
+	// Close process and thread handles. 
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+
+#endif
+}
+
+void output_pdf_printing(string output_file)
+{
+#ifndef WIN32
+	string cmd_line = "\"\"" + s_printer + "\" " + s_printer_switches + " " + output_file +" \"" + s_printername + "\" \"" + s_drivername + "\" \"" + s_portname + "\"\"";
+
+	system(cmd_line.c_str());
+
+#else
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+	si.wShowWindow = SW_HIDE;  // or SW_SHOWNORMAL or SW_MINIMIZE
+
+	ZeroMemory(&pi, sizeof(pi));
+
+	wstring cmd_line = L"\"" + StringToWstring(s_printer) + L"\" " + StringToWstring(s_printer_switches) + L" " + StringToWstring(output_file)
+	+ L" \"" + StringToWstring(s_printername) + L"\" \"" + StringToWstring(s_drivername) + L"\" \"" + StringToWstring(s_portname) + L"\"";
+
+	// Start the child process. 
+	if (!CreateProcess(NULL,   // No module name (use command line)
+		(LPWSTR)cmd_line.c_str(),        // Command line
+		NULL,           // Process handle not inheritable
+		NULL,           // Thread handle not inheritable
+		FALSE,          // Set handle inheritance to FALSE
+		0,              // No creation flags
+		NULL,           // Use parent's environment block
+		NULL,           // Use parent's starting directory 
+		&si,            // Pointer to STARTUPINFO structure
+		&pi)           // Pointer to PROCESS_INFORMATION structure
+		)
+	{
+		return;
+	}
+
+	// Wait until child process exits.
+	WaitForSingleObject(pi.hProcess, 10000);
+
+	// Close process and thread handles. 
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+
+	killProcessByName(StringToWstring(s_printer).c_str());
+#endif
 }
 
 int read_file(string filename)
@@ -383,6 +524,11 @@ int output_pdf_file(string output_file)
 			{
 				result = command::dispatch_command(*doc, dc);
 			}
+			else if (dc.type == ET_NEWPAGE)
+			{
+				doc->end_page();
+				doc->new_page();
+			}
 			else { // paint-able elements
 				doc->add_text(dc.type, dc.w_string);			
 
@@ -394,14 +540,6 @@ int output_pdf_file(string output_file)
 	doc->end_doc();
 
 	return 0;
-}
-
-void output_pdf_preview(string output_file)
-{
-	string cmd_line = "\"" + s_previewer + "\" " + s_preview_switches + " " + output_file;
-	//string cmd_line = "start \"" + s_previewer + "\" " + output_file;
-
-	system(cmd_line.c_str());
 }
 
 size_t process_command(vector<et_datachunk> &data_line, wstring w_str, size_t start, size_t str_size)
@@ -475,7 +613,18 @@ size_t process_command(vector<et_datachunk> &data_line, wstring w_str, size_t st
 			command_string.append(&w_string[start], 1);
 			start++;
 		}
-		if (start > str_size) in_processing = false;
+		if (start >= str_size)
+		{
+			if (!command_string.empty()) {
+
+				et_datachunk dc(ET_COMMAND); // new chunk
+				dc.w_string = command_string;
+				data_line.push_back(dc);
+
+				command_string.clear();
+			}
+			in_processing = false;
+		}
 
 	} while (in_processing);
 
@@ -532,6 +681,16 @@ int break_et_wstring(wchar_t *w_str, size_t str_size, wchar_t control_code, bool
 		wchar_t cp = w_string[start];
 		if (cp == BOM)
 		{
+			start++;
+			continue;
+		}
+
+		if (cp == L'\f') // form feed
+		{
+			et_datachunk *dc = new et_datachunk(ET_NEWPAGE); // new chunk
+			dc->w_string = L"\f";
+			data_line.push_back(*dc);
+
 			start++;
 			continue;
 		}

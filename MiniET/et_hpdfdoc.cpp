@@ -21,6 +21,39 @@ void hpdf_doc::set_paper_margins(HPDF_REAL width, HPDF_REAL length, HPDF_REAL to
 	def_f_margin_right = right;
 }
 
+void hpdf_doc::set_paper_margin(wchar_t margin_indicator, HPDF_INT32 n_margin) // MMTEXT
+{
+	// margins
+	switch (margin_indicator)
+	{
+	case L'l':
+	case L'L':
+		f_margin_left = (double)n_margin / 1000.0; // D2PTX(n_margin);
+		break;
+	case L't':
+	case L'T':
+		f_margin_top = (double)n_margin / 1000.0; //D2PTY(n_margin);
+		break;
+	case L'r':
+	case L'R':
+		f_margin_bottom = (double)n_margin / 1000.0; //D2PTY(n_margin);
+		break;
+	case L'b':
+	case L'B':
+		f_margin_right = (double)n_margin / 1000.0; //D2PTX(n_margin);
+		break;
+	}
+
+	f_margin_x = INCH2PT(f_margin_left);
+	f_margin_y = INCH2PT(f_margin_top);
+
+	if (f_xpos < f_margin_x)
+		f_xpos = f_margin_x;
+	if (f_ypos > f_length - f_margin_y)
+		f_ypos = f_length - f_margin_y;
+
+}
+
 void hpdf_doc::error_handler(HPDF_STATUS error_no, HPDF_STATUS detail_no, void *user_data)
 {
 	/* throw exception when an error has occured */
@@ -39,6 +72,13 @@ hpdf_doc::hpdf_doc(const char* filepath)
 	HPDF_UseUTFEncodings(h_pdf);
 
 	strcpy(filename, filepath);
+
+	f_page_width = def_f_width;
+	f_page_length = def_f_length;
+	f_margin_top = def_f_margin_top;
+	f_margin_left = def_f_margin_left;
+	f_margin_bottom = def_f_margin_bottom;
+	f_margin_right = def_f_margin_right;
 
 }
 
@@ -94,7 +134,7 @@ void hpdf_doc::begin_doc_and_page()
 {
 	init_font_table();
 
-	init(9); //default P300
+	init(300); //default P300
 	new_page(); // the first page added
 
 	h_current_font = HPDF_GetFont(h_pdf, PDF_STD_CHT, PDF_ENCODE_CHT_H);
@@ -204,7 +244,7 @@ void hpdf_doc::init(int p_code)
 	TX = TY = 0;
 	LC = -1;
 
-	S = 1; // no bold
+	S = 0; // no bold
 
 	get_logical_DPI(p_code, D, n_log_X, n_log_Y, Rx, Ry); // Calc the logical DPI
 
@@ -219,11 +259,11 @@ void hpdf_doc::new_page()
 
 	HPDF_Page_SetSize(h_current_page, HPDF_PAGE_SIZE_A4, HPDF_PAGE_PORTRAIT);
 
-	f_width = INCH2PT(def_f_width); // HPDF_Page_GetWidth(h_current_page);
-	f_length = INCH2PT(def_f_length); // HPDF_Page_GetHeight(h_current_page);
+	f_width = INCH2PT(f_page_width); // HPDF_Page_GetWidth(h_current_page);
+	f_length = INCH2PT(f_page_length); // HPDF_Page_GetHeight(h_current_page);
 
-	f_xpos = f_margin_x = INCH2PT(def_f_margin_left);
-	f_margin_y = INCH2PT(def_f_margin_top);
+	f_xpos = f_margin_x = INCH2PT(f_margin_left);
+	f_margin_y = INCH2PT(f_margin_top);
 	f_ypos = f_length - f_margin_y;
 
 	HPDF_Page_SetHeight(h_current_page, f_length);
@@ -258,15 +298,21 @@ void hpdf_doc::rotate_text(HPDF_REAL xpos, HPDF_REAL ypos, char* out_string)
 
 void hpdf_doc::vertical(HPDF_REAL xpos, HPDF_REAL ypos)
 {
-	HPDF_REAL angle = 90;                   /* A rotation of 30 degrees. */
+	HPDF_REAL angle = 90;                   /* A rotation of 90 degrees. */
 	HPDF_REAL rad = (HPDF_REAL) (angle / 180 * 3.141592); /* Calcurate the radian value. */
+
+	int n_TX = (TX > 0) ? TX : T,
+		n_TY = (TY > 0) ? TY : T;
+
+	HPDF_REAL font_height = MMTEXT2PTX(Z * n_TY);
+	HPDF_REAL font_width = MMTEXT2PTX(W * n_TX);
 
 	HPDF_Page_SetTextMatrix(h_current_page, cos(rad), sin(rad), -sin(rad), cos(rad), xpos, ypos);
 }
 
 void hpdf_doc::horizontal(HPDF_REAL xpos, HPDF_REAL ypos)
 {
-	HPDF_REAL angle = 0;                   /* A rotation of 30 degrees. */
+	HPDF_REAL angle = 0;                   /* A rotation of 90 degrees. */
 	HPDF_REAL rad = (HPDF_REAL) (angle / 180 * 3.141592); /* Calcurate the radian value. */
 
 	HPDF_Page_SetTextMatrix(h_current_page, cos(rad), sin(rad), -sin(rad), cos(rad), xpos, ypos);
@@ -297,23 +343,27 @@ void hpdf_doc::add_text(et_type datatype, wstring out_string)
 
 	switch (datatype) {
 	case ET_LATAN:
-	
-		
+		/*
 		size = _wcstombs_l(line, out_string.c_str(), 4096, loceng);
 		if (size == 0) goto END_PROC;
 
 		HPDF_Page_TextOut(h_current_page, f_xpos, f_ypos - f_linespace, line);
 		f_advance = (len * (f_width + f_gap)); //HPDF_Page_TextWidth(h_current_page, line); 
-		
-		//text_out_eng(f_xpos, f_ypos, out_string, f_advance, f_width, f_gap, f_space, loceng);
+		*/
+		text_out_eng(f_xpos, f_ypos, out_string, f_advance, f_width, f_gap, f_space, loceng);
 		break;
 	case ET_SPACE:
 		f_advance += ((f_width + f_gap) * len);
 		break;
 
-	case ET_CJKFORM:
 	case ET_CJK:
+	case ET_CJKFORM:
 	case ET_BOXDRAW:
+
+		if (VorH == 'H' || datatype != ET_CJK)
+			horizontal(f_xpos, f_ypos);
+		else
+			vertical(f_xpos, f_ypos);
 
 		if (datatype == ET_BOXDRAW) resize_font_boxdraw();
 		/*
@@ -359,10 +409,21 @@ void hpdf_doc::new_line()
 
 void hpdf_doc::text_goto(int px, int py)
 {
-	px = (int)((float)px / (float)1000 * (float)n_log_X);
-	py = (int)((float)py / (float)1000 * (float)n_log_Y);
-	f_xpos = px;// -f_margin_x;
-	f_ypos = f_length - py;// +f_margin_y;
+	HPDF_REAL fpx = ((HPDF_REAL)px * 72.0 / n_log_X);
+	HPDF_REAL fpy = ((HPDF_REAL)py * 72.0 / n_log_Y);
+	f_xpos = fpx;
+	f_ypos = f_length - fpy;
+
+	if (f_ypos < 0)
+	{
+		HPDF_REAL fy = f_ypos;
+
+		end_page();
+		new_page(); // xpos and ypos are reset in the function
+
+		// Move to next page
+		f_ypos = fy + f_length;
+	}
 
 }
 
@@ -380,6 +441,10 @@ void hpdf_doc::select_datatype_font(et_type datatype)
 		select_cjk_font();
 		break;
 	}
+
+	if (S > 0) HPDF_Page_SetTextRenderingMode(h_current_page, HPDF_FILL_THEN_STROKE);
+	else HPDF_Page_SetTextRenderingMode(h_current_page, HPDF_FILL);
+
 }
 
 void hpdf_doc::select_eng_font()
@@ -472,8 +537,8 @@ void hpdf_doc::resize_font_boxdraw()
 		int n_TX = (TX > 0) ? TX : T,
 			n_TY = (TY > 0) ? TY : T;
 
-		HPDF_REAL font_height = MMTEXT2PTX((Z * n_TY) +L);
-		HPDF_REAL font_width = MMTEXT2PTX((W * n_TX / 2) +(X / 2));
+		HPDF_REAL font_height = MMTEXT2PTX((Z * n_TY) + L);
+		HPDF_REAL font_width = MMTEXT2PTX((W * n_TX / 2) + (X/2));
 		HPDF_REAL ratio = 100.0;
 		
 		ratio = (HPDF_REAL) ((double)(200.0 * font_width) / font_height);
@@ -489,7 +554,19 @@ void hpdf_doc::text_out_cjk(HPDF_REAL& f_xpos, HPDF_REAL& f_ypos, wstring out_st
 	char line[4];
 	memset(line, 0, 4);
 
+	int n_TX = (TX > 0) ? TX : T,
+		n_TY = (TY > 0) ? TY : T;
+	HPDF_REAL font_height = MMTEXT2PTX((Z * n_TY));
+	HPDF_REAL font_width = MMTEXT2PTX((W * n_TX / 2) + (X / 2));
+	HPDF_REAL ygap = MMTEXT2PTX(L);
+	HPDF_REAL xpos = f_xpos, ypos = f_ypos;
+
 	int len = out_string.length();
+	if (VorH == 'V')
+	{
+		xpos += (f_width + f_gap) * 2;
+		ypos -= font_width;
+	}
 
 	for (int i = 0; i < len; i++)
 	{
@@ -497,8 +574,10 @@ void hpdf_doc::text_out_cjk(HPDF_REAL& f_xpos, HPDF_REAL& f_ypos, wstring out_st
 		size_t size = wchar_to_utf8(&out_wchar, 1, line, 4, NULL);
 		if (size == 0) break;
 
-		HPDF_Page_TextOut(h_current_page, f_xpos + f_advance, f_ypos - f_linespace, line);
-		f_advance += (f_width + f_gap) * 2;
+		HPDF_Page_TextOut(h_current_page, xpos + f_advance, ypos - f_linespace, line);
+
+		f_advance += (VorH == 'V') ? (font_height) : (f_width + f_gap) * 2;
+		//f_advance += (f_width + f_gap) * 2;
 	}
 }
 
