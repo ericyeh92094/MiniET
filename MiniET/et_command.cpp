@@ -81,7 +81,19 @@ struct et_command_P : public command {
 public:
 	et_command_P() {};
 	virtual bool parse(wstring& cmd_string) {
-		return process_single_param(cmd_string, doc->P);
+		HPDF_INT P = 0;
+		bool result = process_single_param(cmd_string, P);
+
+		if (P < 60)
+			doc->P = 9;
+		else if (P < 100)
+			doc->P = 60;
+		else
+			doc->P = P;
+
+		doc->init(doc->P);
+
+		return result;
 	}
 };
 
@@ -304,6 +316,16 @@ public:
 };
 
 //////////////////////////////////////////
+struct et_command_Q : public command {
+public:
+	et_command_Q() {};
+	virtual bool parse(wstring& cmd_string) {
+		return process_single_param(cmd_string, doc->Q);
+	}
+
+};
+
+//////////////////////////////////////////
 struct et_command_V : public command {
 public:
 	et_command_V() {};
@@ -384,6 +406,24 @@ public:
 };
 
 //////////////////////////////////////////
+struct et_command_J : public command {
+public:
+	et_command_J() {};
+	virtual bool parse(wstring& cmd_string) {
+		HPDF_INT J;
+		bool result = process_single_param(cmd_string, J);
+
+		if (J == 6)
+			doc->protrait();
+		else if (J == 7)
+			doc->landscape();
+
+		return result;
+	}
+
+};
+
+//////////////////////////////////////////
 struct et_command_QMARK : public command {
 public:
 	et_command_QMARK() {};
@@ -418,6 +458,7 @@ void command::init_lookup_table()
 	et_lookup_table[L"V"] = new et_command_V();
 	et_lookup_table[L"C"] = new et_command_C();
 	et_lookup_table[L"E"] = new et_command_E();
+	et_lookup_table[L"J"] = new et_command_J();
 	et_lookup_table[L"?"] = new et_command_QMARK();
 
 	et_sp_lookup_table[L"CF"] = new et_command_CF();

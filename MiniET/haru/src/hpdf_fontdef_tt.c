@@ -932,9 +932,20 @@ ParseCMap (HPDF_FontDef  fontdef)
             break;
         }
 
+		/* MS-Unicode-CMAP is used for priority */
+		if (platformID == 3 && encodingID == 0 && format == 4) {
+			ms_unicode_encoding_offset = offset;
+			break;
+		}
+
         /* Byte-Encoding-CMAP will be used if MS-Unicode-CMAP is not found */
         if (platformID == 1 && encodingID ==0 && format == 1)
             byte_encoding_offset = offset;
+		/* Byte-Encoding-CMAP will be used if MS-Unicode-CMAP is not found */
+
+		if (platformID == 1 && encodingID == 0 && format == 0)
+			byte_encoding_offset = offset;
+	
 
         ret = HPDF_Stream_Seek (attr->stream, save_offset, HPDF_SEEK_SET);
         if (ret != HPDF_OK)

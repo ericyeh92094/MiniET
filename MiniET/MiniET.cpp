@@ -58,6 +58,8 @@ static string s_codepage;
 
 int _tmain(int argc, wchar_t* argv[], wchar_t *envp[])
 {
+	//FreeConsole();
+
 	command::init_lookup_table(); // init command dispatch table
 
 	if (!read_switch(argc, argv))
@@ -150,17 +152,17 @@ bool read_switch(int argc,wchar_t* argv[])
 		{
 			if (param.TryGetArgument("config", argument))
 			{
-				cout << "config file: " << argument.m_sContent << endl;
+				// cout << "config file: " << argument.m_sContent << endl;
 				config_file = argument.m_sContent;
 			}
 			if (param.TryGetArgument("target", argument))
 			{
-				cout << "target file name:" << argument.m_sContent << endl;
+				//cout << "target file name:" << argument.m_sContent << endl;
 				target_file = argument.m_sContent;
 			}
 			if (param.TryGetArgument("output", argument))
 			{
-				cout << "output file name:" << argument.m_sContent << endl;
+				//cout << "output file name:" << argument.m_sContent << endl;
 				output_file = argument.m_sContent;
 			}
 
@@ -218,7 +220,6 @@ void read_config(string configfile, wchar_t *envp[])
 			bottom = group->pDouble("bottom");
 
 			hpdf_doc::set_paper_margins(width, length, top, left, right, bottom);
-
 		}
 		
 		if (groupName == "Fonts")
@@ -403,6 +404,7 @@ int read_file(string filename)
 			result = read_ansi_file(fs8, line);
 		}
 	}
+
 	return result;
 }
 
@@ -413,7 +415,6 @@ int read_utf8_file(ifstream &fs8, string &firstline)
 	unsigned line_count = 1;
 	string line = firstline;
 	int utf_flag = b_bom ? 0 : UTF8_SKIP_BOM;
-
 
 	// Play with all the lines in the file
 	do {
@@ -500,12 +501,11 @@ int read_ansi_file(ifstream &fs8, string &firstline)
 
 int output_pdf_file(string output_file)
 {
-	//char mb_output_file[_MAX_PATH];
-	//wcstombs(mb_output_file, output_file,_MAX_PATH);
-
 	vector<vector<et_datachunk>>::iterator line_iter;
 
 	hpdf_doc *doc = new hpdf_doc(output_file.c_str());
+
+	strcpy(doc->source_filename, target_file.c_str());
 
 	line_iter = data_vect.begin();
 	doc->begin_doc_and_page();
@@ -530,8 +530,12 @@ int output_pdf_file(string output_file)
 				doc->new_page();
 			}
 			else { // paint-able elements
+				if (doc->Q > 0)
+				{
+					wstring spaces(doc->Q, L' ');
+					dc.w_string = spaces + dc.w_string;
+				}
 				doc->add_text(dc.type, dc.w_string);			
-
 			}
 
 		}

@@ -80,6 +80,7 @@ hpdf_doc::hpdf_doc(const char* filepath)
 	f_margin_bottom = def_f_margin_bottom;
 	f_margin_right = def_f_margin_right;
 
+	h_direction = HPDF_PAGE_PORTRAIT;
 }
 
 hpdf_doc::~hpdf_doc()
@@ -146,6 +147,7 @@ void hpdf_doc::begin_doc_and_page()
 void hpdf_doc::end_doc()
 {
 	end_page();
+	HPDF_AttachFile(h_pdf, source_filename);
 	HPDF_SaveToFile(h_pdf, (const char*)filename);
 }
 
@@ -229,6 +231,7 @@ void hpdf_doc::init(int p_code)
 	GT = 1;
 	B = 0;
 	D = 0;
+	Q = 0;
 
 	if (Rx == 0 || Ry == 0)
 		Rx = Ry = 100;
@@ -257,7 +260,7 @@ void hpdf_doc::new_page()
 
 	h_current_page = HPDF_AddPage(h_pdf);
 
-	HPDF_Page_SetSize(h_current_page, HPDF_PAGE_SIZE_A4, HPDF_PAGE_PORTRAIT);
+	HPDF_Page_SetSize(h_current_page, HPDF_PAGE_SIZE_A4, h_direction);
 
 	f_width = INCH2PT(f_page_width); // HPDF_Page_GetWidth(h_current_page);
 	f_length = INCH2PT(f_page_length); // HPDF_Page_GetHeight(h_current_page);
@@ -279,8 +282,38 @@ void hpdf_doc::end_page()
 {
 	HPDF_Page_EndText(h_current_page);
 
-	//HPDF_SaveToFile(h_pdf, (const char*)filename);
 	h_current_page = 0;
+}
+
+void hpdf_doc::protrait()
+{
+	if (h_direction == HPDF_PAGE_PORTRAIT)
+		return;
+
+	h_direction = HPDF_PAGE_LANDSCAPE;
+	HPDF_Page_SetSize(h_current_page, HPDF_PAGE_SIZE_A4, h_direction);
+
+	f_width = INCH2PT(f_page_width); 
+	f_length = INCH2PT(f_page_length); 
+
+	HPDF_Page_SetHeight(h_current_page, f_length);
+	HPDF_Page_SetWidth(h_current_page, f_width);
+
+}
+
+void hpdf_doc::landscape()
+{
+	if (h_direction == HPDF_PAGE_LANDSCAPE)
+		return;
+
+	h_direction = HPDF_PAGE_PORTRAIT;
+
+	f_length = INCH2PT(f_page_width);
+	f_width = INCH2PT(f_page_length);
+
+	HPDF_Page_SetHeight(h_current_page, f_length);
+	HPDF_Page_SetWidth(h_current_page, f_width);
+
 }
 
 void hpdf_doc::rotate_text(HPDF_REAL xpos, HPDF_REAL ypos, char* out_string)
@@ -343,13 +376,15 @@ void hpdf_doc::add_text(et_type datatype, wstring out_string)
 
 	switch (datatype) {
 	case ET_LATAN:
+		
 		/*
 		size = _wcstombs_l(line, out_string.c_str(), 4096, loceng);
 		if (size == 0) goto END_PROC;
 
 		HPDF_Page_TextOut(h_current_page, f_xpos, f_ypos - f_linespace, line);
-		f_advance = (len * (f_width + f_gap)); //HPDF_Page_TextWidth(h_current_page, line); 
+		f_advance = HPDF_Page_TextWidth(h_current_page, line); 
 		*/
+		
 		text_out_eng(f_xpos, f_ypos, out_string, f_advance, f_width, f_gap, f_space, loceng);
 		break;
 	case ET_SPACE:
@@ -409,6 +444,12 @@ void hpdf_doc::new_line()
 
 void hpdf_doc::text_goto(int px, int py)
 {
+	int n_TX = (TX > 0) ? TX : T,
+		n_TY = (TY > 0) ? TY : T;
+
+	HPDF_REAL space = MMTEXT2PTY(Z * n_TY + L);
+	if (space > f_linespace) f_linespace = space;
+
 	HPDF_REAL fpx = ((HPDF_REAL)px * 72.0 / n_log_X);
 	HPDF_REAL fpy = ((HPDF_REAL)py * 72.0 / n_log_Y);
 	f_xpos = fpx;
@@ -482,10 +523,14 @@ void hpdf_doc::set_font_handle(HPDF_Page h_page, HPDF_Font h_font)
 		HPDF_REAL font_height = MMTEXT2PTX(Z * n_TY);
 		HPDF_REAL font_width = MMTEXT2PTX(W * n_TX / 2);
 		HPDF_REAL ratio = 100.0;
+		/*
 		if (font_width >= font_height)
 		{
-			ratio = (HPDF_REAL) (200.0 * font_width / font_height);
+			ratio = (HPDF_REAL) (100.0 * font_width / font_height);
 		}
+		*/
+		ratio = (HPDF_REAL)((double)(200.0 * font_width) / font_height);
+
 
 		HPDF_Page_SetFontAndSize(h_page, h_font, font_height);
 		HPDF_Page_SetHorizontalScalling(h_page, ratio);

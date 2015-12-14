@@ -77,6 +77,7 @@ public:
 
 public:
 	char filename[_MAX_PATH];
+	char source_filename[_MAX_PATH];
 
 	HPDF_Doc h_pdf;
 	HPDF_Page h_current_page;
@@ -121,6 +122,8 @@ public:
 	void set_page_orientation();
 	void new_page();
 	void end_page();
+	void protrait();
+	void landscape();
 
 	void rotate_text(HPDF_REAL xpos, HPDF_REAL ypos, char* out_string);
 	void vertical(HPDF_REAL xpos, HPDF_REAL ypos);
@@ -169,6 +172,7 @@ public:
 		B,      // 0 to 6 (0 default)
 		J,      // 0 - Left, 1 - Middle, 2 - Right, 3 - (reserved)
 		O,		// 0 - 15 color level
+		Q,		// # of spaces before line
 		TX, TY; // 16 - 4096, 0 = not set
 	HPDF_INT
 		L,      // -255..255
