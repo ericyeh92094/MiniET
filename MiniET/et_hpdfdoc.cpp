@@ -9,6 +9,7 @@ HPDF_REAL hpdf_doc::def_f_margin_right = PDF_DEFAULT_MARGIN_RIGHT;
 HPDF_REAL hpdf_doc::def_f_width = PDF_DEFAULT_WIDTH;
 HPDF_REAL hpdf_doc::def_f_length = PDF_DEFAULT_LENGTH;
 map< std::string, string> hpdf_doc::external_fonts;
+string hpdf_doc::font_path_parent;
 
 
 void hpdf_doc::set_paper_margins(HPDF_REAL width, HPDF_REAL length, HPDF_REAL top, HPDF_REAL left, HPDF_REAL bottom, HPDF_REAL right)
@@ -19,6 +20,11 @@ void hpdf_doc::set_paper_margins(HPDF_REAL width, HPDF_REAL length, HPDF_REAL to
 	def_f_margin_left = left;
 	def_f_margin_bottom = bottom;
 	def_f_margin_right = right;
+}
+
+void hpdf_doc::set_fontpath_parent(string font_parent)
+{
+	font_path_parent = font_parent;
 }
 
 void hpdf_doc::set_paper_margin(wchar_t margin_indicator, HPDF_INT32 n_margin) // MMTEXT
@@ -98,7 +104,9 @@ void hpdf_doc::init_font_table()
 {
 	wstring font_str(L"A");
 	const char *font_name;
-	font_name = HPDF_LoadTTFontFromFile(h_pdf, PDF_STD_UNICODE, HPDF_TRUE);
+	string font_full_path = font_path_parent + PDF_STD_UNICODE;
+
+	font_name = HPDF_LoadTTFontFromFile(h_pdf, font_full_path.c_str(), HPDF_TRUE);
 
 	HPDF_Font font = HPDF_GetFont(h_pdf, font_name, PDF_STD_ENCODE);
 
@@ -110,7 +118,8 @@ void hpdf_doc::init_font_table()
 		mapped_font_lookup_table[font_str] = fm;
 	}
 
-	font_name = HPDF_LoadTTFontFromFile(h_pdf, PDF_STD_KAI, HPDF_TRUE);
+	font_full_path = font_path_parent + PDF_STD_KAI;
+	font_name = HPDF_LoadTTFontFromFile(h_pdf, font_full_path.c_str(), HPDF_TRUE);
 	font = HPDF_GetFont(h_pdf, font_name, PDF_STD_ENCODE);
 	
 	mapped_font *kai_fm = new mapped_font(font_name, PDF_STD_ENCODE);
@@ -122,7 +131,8 @@ void hpdf_doc::init_font_table()
 		wstring font_letter = StringToWstring(j->first);
 		string font_path = j->second;
 
-		font_name = HPDF_LoadTTFontFromFile(h_pdf, font_path.c_str(), HPDF_TRUE);
+		font_full_path = font_path_parent + font_path;
+		font_name = HPDF_LoadTTFontFromFile(h_pdf, font_full_path.c_str(), HPDF_TRUE);
 		font = HPDF_GetFont(h_pdf, font_name, PDF_STD_ENCODE);
 
 		mapped_font *fm = new mapped_font(font_name, PDF_STD_ENCODE);

@@ -55,17 +55,30 @@ static string config_file, target_file, output_file;
 static bool b_preview, b_print, b_bom;
 static string s_previewer, s_preview_switches, s_printer, s_printer_switches, s_printername, s_drivername, s_portname;
 static string s_codepage;
+static 	wchar_t basePath[_MAX_PATH];
+static wchar_t drive[_MAX_DRIVE];
+static wchar_t dir[_MAX_DIR];
+static wchar_t fname[_MAX_FNAME];
+static wchar_t ext[_MAX_EXT];
+
 
 int _tmain(int argc, wchar_t* argv[], wchar_t *envp[])
 {
-	//FreeConsole();
+	ShowWindow(GetConsoleWindow(), SW_HIDE);
 
 	command::init_lookup_table(); // init command dispatch table
 
 	if (!read_switch(argc, argv))
 		return 0; //switch parsing error
 
+	_wfullpath(basePath, argv[0], sizeof(basePath));
+
+	_wsplitpath(basePath, drive, dir, fname, ext);
+	wstring wfont_path_parent = wstring(drive) + wstring(dir); // +L"\"";
+
 	read_config(config_file, envp);
+
+	hpdf_doc::set_fontpath_parent(WstringToString(wfont_path_parent));
 
 	int line = read_file(target_file);
 
@@ -230,8 +243,14 @@ void read_config(string configfile, wchar_t *envp[])
 			for (map<string, string>::iterator j = symbol.begin(); j != symbol.end(); ++j)
 			{
 				font_name = j->first;
-				font_path = j->second;
-				hpdf_doc::add_external_font(font_name, font_path);
+				if (font_name == "Folder")
+				{
+					hpdf_doc::set_fontpath_parent(j->second);
+				}
+				else {
+					font_path = j->second;
+					hpdf_doc::add_external_font(font_name, font_path);
+				}
 			}		
 		}
 

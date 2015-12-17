@@ -61,6 +61,8 @@ public:
 	static HPDF_REAL def_f_length;
 	static HPDF_REAL def_f_width;
 
+	static string font_path_parent;
+
 	typedef void(*draw_symbol_function)(int line_width, int lw, int x, int y, int x1, int y1, int x2, int y2, int w, int h, int w1, int h1, int w2, int h2);
 
 	inline HPDF_REAL MMTEXT2PTX(long nUnit) { return (HPDF_REAL)((double)nUnit * 72.0 / (double)n_log_X); }
@@ -111,6 +113,7 @@ public:
 	void set_paper_margin(wchar_t margin_indicator, HPDF_INT32 n_margin); // MMTEXT
 
 	static void add_external_font(string font_name, string font_path);
+	static void set_fontpath_parent(string font_parent);
 
 	void begin_doc_and_page();
 	void end_doc();
