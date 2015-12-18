@@ -320,7 +320,12 @@ void output_pdf_preview(string output_file)
 	si.cb = sizeof(si);
 	ZeroMemory(&pi, sizeof(pi));
 
-	wstring cmd_line = L"\"" + StringToWstring(s_previewer) + L"\" " + StringToWstring(s_preview_switches) + L" " + StringToWstring(output_file);
+	wstring cmd_line = L"";
+
+	if (s_preview_switches == "\n")
+		cmd_line = L"\"" + StringToWstring(s_previewer) + L"\" " + StringToWstring(output_file);
+	else
+		cmd_line = L"\"" + StringToWstring(s_previewer) + L"\" " + StringToWstring(s_preview_switches) + L" " + StringToWstring(output_file);
 
 	// Start the child process. 
 	if (!CreateProcess(NULL,   // No module name (use command line)
