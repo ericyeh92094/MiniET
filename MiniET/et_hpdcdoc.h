@@ -65,10 +65,10 @@ public:
 
 	typedef void(*draw_symbol_function)(int line_width, int lw, int x, int y, int x1, int y1, int x2, int y2, int w, int h, int w1, int h1, int w2, int h2);
 
-	inline HPDF_REAL MMTEXT2PTX(long nUnit) { return (HPDF_REAL)((double)nUnit * 72.0 / (double)n_log_X); }
-	inline HPDF_REAL MMTEXT2PTY(long nUnit) { return (HPDF_REAL)((double)nUnit * 72.0 / (double)n_log_Y); }
-	inline HPDF_REAL D2PTX(long nUnit) { return (HPDF_REAL)((double)nUnit * 72.0 / ((double)n_log_X * 1000L)); }
-	inline HPDF_REAL D2PTY(long nUnit) { return (HPDF_REAL)((double)nUnit * 72.0 / ((double)n_log_Y * 1000L)); }
+	inline HPDF_REAL MMTEXT2PTX(long nUnit) { return (HPDF_REAL)((HPDF_REAL)nUnit * 72.0 / (HPDF_REAL)n_log_X); }
+	inline HPDF_REAL MMTEXT2PTY(long nUnit) { return (HPDF_REAL)((HPDF_REAL)nUnit * 72.0 / (HPDF_REAL)n_log_Y); }
+	inline HPDF_REAL D2PTX(long nUnit) { return (HPDF_REAL)((HPDF_REAL)nUnit * 72.0 / ((HPDF_REAL)n_log_X * 1000L)); }
+	inline HPDF_REAL D2PTY(long nUnit) { return (HPDF_REAL)((HPDF_REAL)nUnit * 72.0 / ((HPDF_REAL)n_log_Y * 1000L)); }
 
 	inline HPDF_REAL INCH2PT(float fUnit) { return (HPDF_REAL)(fUnit * 72.0); }
 
@@ -137,10 +137,10 @@ public:
 
 	void select_eng_font();
 	void select_cjk_font();
-	void set_font_handle(HPDF_Page h_page, HPDF_Font h_font);
+	void set_font_handle(HPDF_Page h_page, HPDF_Font h_font, bool isCJK);
 	void select_datatype_font(et_type datatype);
 	void select_font(int index);
-	//void select_font(wstring font_letter);
+
 	void select_font(const char* fontname);
 	void select_font(wstring fontname);
 	void resize_font_boxdraw();

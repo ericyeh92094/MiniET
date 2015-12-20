@@ -77,6 +77,16 @@ public:
 };
 
 /////////////////////////////////////////
+struct et_command_U : public command {
+public:
+	et_command_U() {};
+	virtual bool parse(wstring& cmd_string) {
+		return process_single_param(cmd_string, doc->U);
+	}
+
+};
+
+/////////////////////////////////////////
 struct et_command_P : public command {
 public:
 	et_command_P() {};
@@ -280,17 +290,6 @@ public:
 	et_command_S() {};
 	virtual bool parse(wstring& cmd_string) {
 		return process_single_param(cmd_string, doc->S);
-	}
-
-};
-
-
-//////////////////////////////////////////
-struct et_command_U : public command {
-public:
-	et_command_U() {};
-	virtual bool parse(wstring& cmd_string) {
-		return true;
 	}
 
 };

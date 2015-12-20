@@ -150,7 +150,7 @@ void hpdf_doc::begin_doc_and_page()
 
 	h_current_font = HPDF_GetFont(h_pdf, PDF_STD_CHT, PDF_ENCODE_CHT_H);
 
-	set_font_handle(h_current_page, h_current_font);
+	set_font_handle(h_current_page, h_current_font, true);
 
 }
 
@@ -284,13 +284,13 @@ void hpdf_doc::new_page()
 
 	f_linespace = 0;
 
-	HPDF_Page_BeginText(h_current_page);
+	//HPDF_Page_BeginText(h_current_page);
 
 }
 
 void hpdf_doc::end_page() 
 {
-	HPDF_Page_EndText(h_current_page);
+	//HPDF_Page_EndText(h_current_page);
 
 	h_current_page = 0;
 }
@@ -379,10 +379,16 @@ void hpdf_doc::add_text(et_type datatype, wstring out_string)
 	HPDF_REAL f_gap = MMTEXT2PTX(X/2);
 	HPDF_REAL f_space = MMTEXT2PTY((Z * n_TY) + L);
 
+
+	HPDF_Page_BeginText(h_current_page);
+
+	select_datatype_font(datatype);
+
+	f_space = HPDF_Page_GetCurrentFontSize(h_current_page);
+
 	if (f_space > f_linespace)
 		f_linespace = f_space;
 
-	select_datatype_font(datatype);
 
 	switch (datatype) {
 	case ET_LATAN:
@@ -394,7 +400,7 @@ void hpdf_doc::add_text(et_type datatype, wstring out_string)
 		HPDF_Page_TextOut(h_current_page, f_xpos, f_ypos - f_linespace, line);
 		f_advance = HPDF_Page_TextWidth(h_current_page, line); 
 		*/
-		
+		if (CorE == 'C') f_width = f_width * 2;
 		text_out_eng(f_xpos, f_ypos, out_string, f_advance, f_width, f_gap, f_space, loceng);
 		break;
 	case ET_SPACE:
@@ -425,10 +431,18 @@ void hpdf_doc::add_text(et_type datatype, wstring out_string)
 
 		break;
 	}
-
+	HPDF_Page_EndText(h_current_page);
+	
+	if (U > 0)
+	{
+		HPDF_Page_SetLineWidth(h_current_page, 0.5);
+		HPDF_Page_MoveTo(h_current_page, f_xpos, f_ypos - f_linespace);
+		HPDF_Page_LineTo(h_current_page, f_xpos, f_ypos);
+		HPDF_Page_Stroke(h_current_page);
+	}
+	
 	f_xpos += f_advance;
 
-END_PROC:
 	delete [] line; // free buffer
 
 	_free_locale(loceng);
@@ -458,7 +472,8 @@ void hpdf_doc::text_goto(int px, int py)
 		n_TY = (TY > 0) ? TY : T;
 
 	HPDF_REAL space = MMTEXT2PTY(Z * n_TY + L);
-	if (space > f_linespace) f_linespace = space;
+	//if (space > f_linespace) f_linespace = space;
+	f_linespace = HPDF_Page_GetCurrentFontSize(h_current_page);
 
 	HPDF_REAL fpx = ((HPDF_REAL)px * 72.0 / n_log_X);
 	HPDF_REAL fpy = ((HPDF_REAL)py * 72.0 / n_log_Y);
@@ -508,7 +523,7 @@ void hpdf_doc::select_eng_font()
 		h_current_font = HPDF_GetFont(h_pdf, PDF_STD_ANSI, NULL);
 
 		if (h_current_page != 0)
-			set_font_handle(h_current_page, h_current_font);
+			set_font_handle(h_current_page, h_current_font, false);
 	}
 }
 
@@ -523,7 +538,7 @@ void hpdf_doc::select_cjk_font()
 
 }
 
-void hpdf_doc::set_font_handle(HPDF_Page h_page, HPDF_Font h_font)
+void hpdf_doc::set_font_handle(HPDF_Page h_page, HPDF_Font h_font, bool isCJK)
 {
 	if (h_font != 0) // seccessfully get font
 	{
@@ -533,13 +548,17 @@ void hpdf_doc::set_font_handle(HPDF_Page h_page, HPDF_Font h_font)
 		HPDF_REAL font_height = MMTEXT2PTX(Z * n_TY);
 		HPDF_REAL font_width = MMTEXT2PTX(W * n_TX / 2);
 		HPDF_REAL ratio = 100.0;
+		
 		/*
 		if (font_width >= font_height)
 		{
 			ratio = (HPDF_REAL) (100.0 * font_width / font_height);
 		}
 		*/
-		ratio = (HPDF_REAL)((double)(200.0 * font_width) / font_height);
+		if (isCJK)
+			ratio = (HPDF_REAL)((200.0 * font_width) / font_height);
+		else
+			ratio = 100.0;
 
 
 		HPDF_Page_SetFontAndSize(h_page, h_font, font_height);
@@ -547,6 +566,11 @@ void hpdf_doc::set_font_handle(HPDF_Page h_page, HPDF_Font h_font)
 
 		f_font_height = font_height;
 		f_font_width = font_width;
+
+		//font_height = HPDF_Page_GetCurrentFontSize(h_page);
+		//HPDF_Box box = HPDF_Font_GetBBox(h_font);
+		//HPDF_INT dec = HPDF_Font_GetDescent(h_font);
+		//f_font_height = dec;
 	}
 }
 
@@ -561,7 +585,7 @@ void hpdf_doc::select_font(int font_index)
 	map< std::wstring, mapped_font* >::iterator iter = mapped_font_lookup_table.find(font_str); //find the font index 
 	if (iter != mapped_font_lookup_table.end()) {
 		h_current_font = iter->second->font_handle;
-		set_font_handle(h_current_page, h_current_font);
+		set_font_handle(h_current_page, h_current_font, true);
 	}
 }
 
@@ -571,7 +595,7 @@ void hpdf_doc::select_font(wstring font_name)
 	map< std::wstring, mapped_font* >::iterator iter = mapped_font_lookup_table.find(font_name); //find the font index 
 	if (iter != mapped_font_lookup_table.end()) {
 		h_current_font = iter->second->font_handle;
-		set_font_handle(h_current_page, h_current_font);
+		set_font_handle(h_current_page, h_current_font, true);
 	}
 }
 
@@ -581,7 +605,7 @@ void hpdf_doc::select_font(const char* longfontname)
 	font_name = HPDF_LoadTTFontFromFile(h_pdf, longfontname, HPDF_TRUE);
 
 	h_current_font = HPDF_GetFont(h_pdf, font_name, PDF_STD_ENCODE);
-	set_font_handle(h_current_page, h_current_font);
+	set_font_handle(h_current_page, h_current_font, true);
 
 }
 
@@ -630,10 +654,10 @@ void hpdf_doc::text_out_cjk(HPDF_REAL& f_xpos, HPDF_REAL& f_ypos, wstring out_st
 		if (size == 0) break;
 
 		HPDF_Page_TextOut(h_current_page, xpos + f_advance, ypos - f_linespace, line);
-
 		f_advance += (VorH == 'V') ? (font_height) : (f_width + f_gap) * 2;
 		//f_advance += (f_width + f_gap) * 2;
 	}
+
 }
 
 void hpdf_doc::text_out_eng(HPDF_REAL& f_xpos, HPDF_REAL& f_ypos, wstring out_string, HPDF_REAL& f_advance, HPDF_REAL f_width, HPDF_REAL f_gap, HPDF_REAL f_space, _locale_t loceng)
@@ -653,6 +677,7 @@ void hpdf_doc::text_out_eng(HPDF_REAL& f_xpos, HPDF_REAL& f_ypos, wstring out_st
 		HPDF_Page_TextOut(h_current_page, f_xpos + f_advance, f_ypos - f_linespace, line);
 		f_advance += (f_width + f_gap);
 	}
+
 }
 
 void hpdf_doc::place_image(int x, int y, int n_destwidth, int n_destlength, int n_srcwidth, int n_srclength, const char *filename)

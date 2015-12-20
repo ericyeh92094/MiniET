@@ -64,7 +64,7 @@ static wchar_t ext[_MAX_EXT];
 
 int _tmain(int argc, wchar_t* argv[], wchar_t *envp[])
 {
-	ShowWindow(GetConsoleWindow(), SW_HIDE);
+	//ShowWindow(GetConsoleWindow(), SW_HIDE);
 
 	command::init_lookup_table(); // init command dispatch table
 
