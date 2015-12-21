@@ -234,6 +234,22 @@ public:
 
 };
 
+//////////////////////////////////////////
+struct et_command_JX : public command {
+public:
+	et_command_JX() {};
+	virtual bool parse(wstring& cmd_string) {
+
+		int len = cmd_string.length();
+		if (len > 0)
+		{
+			wstring just_indicator = cmd_string.substr(1, 1); // L, M, R
+		}
+		return true;
+	}
+
+};
+
 
 //////////////////////////////////////////
 struct et_command_W : public command {
@@ -468,6 +484,9 @@ void command::init_lookup_table()
 	et_sp_lookup_table[L"MT"] = new et_command_MX();
 	et_sp_lookup_table[L"MR"] = new et_command_MX();
 	et_sp_lookup_table[L"MB"] = new et_command_MX();
+	et_sp_lookup_table[L"JL"] = new et_command_JX();
+	et_sp_lookup_table[L"JM"] = new et_command_JX();
+	et_sp_lookup_table[L"JR"] = new et_command_JX();
 
 
 }
