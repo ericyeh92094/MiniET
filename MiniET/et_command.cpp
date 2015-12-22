@@ -6,6 +6,9 @@
 
 #include "et_command.h"
 
+extern vector<vector<et_datachunk>> data_vect;
+extern std::vector<et_datachunk> data_line;
+
 int command::get_int(const wchar_t *code, int idx)
 {
 	int n_start = idx,
@@ -130,6 +133,41 @@ public:
 	}
 };
 
+/////////////////////////////////////////
+struct et_command_SP_G : public command { // [G;filepath;x;y;w;h;ev]
+public:
+	et_command_SP_G() {};
+	virtual bool parse(wstring& cmd_string) {
+		int len = cmd_string.length();
+		if (len > 0)
+		{
+			wstring code_str = cmd_string.substr(1, len);
+			if (code_str[0] == L';')
+			{
+				int pos = code_str.find(L';', 1);
+				wstring file_path = code_str.substr(1, pos - 1);
+				
+				code_str = code_str.substr(pos + 1, code_str.length() - pos - 2);
+				int px = 0, py = 0, w = 0, h = 0, ev = 0;
+				if (swscanf(code_str.c_str(), L"%d;%d;%d;%d;%d", &px, &py, &w, &h, &ev) == 5)
+				{
+					doc->place_image(px, py, px + w, py + h, ev, file_path);
+					/*
+					et_datachunk dc(ET_DRAWBOX); // new chunk
+					dc.w_string = file_path;
+					dc.rect.top = px;
+					dc.rect.left = py;
+					dc.rect.right = px + w;
+					dc.rect.bottom = py + h;
+					data_line.push_back(dc);
+					*/
+				}
+			}
+
+		}
+		return true;
+	}
+};
 //////////////////////////////////////////
 struct et_command_F : public command {
 public:
@@ -480,6 +518,8 @@ void command::init_lookup_table()
 	et_sp_lookup_table[L"EF"] = new et_command_EF();
 	et_sp_lookup_table[L"P"] = new et_command_SP_P();
 	et_sp_lookup_table[L"p"] = new et_command_SP_P();
+	et_sp_lookup_table[L"G"] = new et_command_SP_G();
+	et_sp_lookup_table[L"g"] = new et_command_SP_G();
 	et_sp_lookup_table[L"ML"] = new et_command_MX();
 	et_sp_lookup_table[L"MT"] = new et_command_MX();
 	et_sp_lookup_table[L"MR"] = new et_command_MX();

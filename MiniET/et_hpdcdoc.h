@@ -146,7 +146,7 @@ public:
 	void resize_font_boxdraw();
 	void text_out_eng(HPDF_REAL& f_xpos, HPDF_REAL& f_ypos, wstring out_string, HPDF_REAL& f_advance, HPDF_REAL f_width, HPDF_REAL f_gap, HPDF_REAL f_space, _locale_t loceng);
 	void text_out_cjk(HPDF_REAL& f_xpos, HPDF_REAL& f_ypos, wstring out_string, HPDF_REAL& f_advance, HPDF_REAL f_width, HPDF_REAL f_gap, HPDF_REAL f_space);
-	void place_image(int x, int y, int n_destwidth, int n_destlength, int n_srcwidth, int n_srclength, const char *filename);
+	void place_image(int x, int y, int n_destwidth, int n_destlength, int ev, wstring filename);
 
 	void polygon(HPDF_Point pt[], int count);
 	//inline void MoveTo(HPDF_REAL x, HPDF_REAL y) { HPDF_Page_MoveTo(h_current_page, MMTEXT2PTX(x), MMTEXT2PTY(y)); };

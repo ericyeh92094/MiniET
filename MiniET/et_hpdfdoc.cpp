@@ -473,7 +473,7 @@ void hpdf_doc::text_goto(int px, int py)
 
 	HPDF_REAL space = MMTEXT2PTY(Z * n_TY + L);
 	//if (space > f_linespace) f_linespace = space;
-	f_linespace = HPDF_Page_GetCurrentFontSize(h_current_page);
+	f_linespace = 0;// HPDF_Page_GetCurrentFontSize(h_current_page);
 
 	HPDF_REAL fpx = ((HPDF_REAL)px * 72.0 / n_log_X);
 	HPDF_REAL fpy = ((HPDF_REAL)py * 72.0 / n_log_Y);
@@ -680,8 +680,21 @@ void hpdf_doc::text_out_eng(HPDF_REAL& f_xpos, HPDF_REAL& f_ypos, wstring out_st
 
 }
 
-void hpdf_doc::place_image(int x, int y, int n_destwidth, int n_destlength, int n_srcwidth, int n_srclength, const char *filename)
+void hpdf_doc::place_image(int x0, int y0, int x1, int y1, int ev, wstring filename)
 {
+	string filepath = WstringToString(filename);
+
+	HPDF_Image img = HPDF_LoadJpegImageFromFile(h_pdf, filepath.c_str());
+	if (img == NULL) return;
+
+	HPDF_REAL fpx = ((HPDF_REAL)x0 * 72.0 / 1000.0);
+	HPDF_REAL fpy = ((HPDF_REAL)y0 * 72.0 / 1000.0);
+	HPDF_REAL fwidth = ev * ((HPDF_REAL)(x1 - x0) * 72.0 / 1000.0);
+	HPDF_REAL fheight = ev * ((HPDF_REAL)(y1 - y0) * 72.0 / 1000.0);
+	HPDF_REAL f_ypos = f_length - fpy - fheight;
+
+	HPDF_Page_DrawImage(h_current_page, img, fpx, f_ypos, fwidth, fheight);
+
 }
 
 void hpdf_doc::polygon(HPDF_Point pt[], int count)

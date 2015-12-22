@@ -4,9 +4,10 @@
 #include <string>
 #include <vector>
 #include <wchar.h>
+#include "hpdf.h"
 
 typedef enum _et_type_ {
-	ET_LATAN, ET_FULLWIDTHSPACE, ET_CJKFORM, ET_CJK, ET_SPACE, ET_BOXDRAW, ET_USER, ET_NEWPAGE, ET_COMMAND, ET_SP_COMMAND
+	ET_LATAN, ET_FULLWIDTHSPACE, ET_CJKFORM, ET_CJK, ET_SPACE, ET_BOXDRAW, ET_DRAWBOX, ET_USER, ET_NEWPAGE, ET_COMMAND, ET_SP_COMMAND
 } et_type;
 using namespace std;
 
@@ -14,6 +15,8 @@ struct et_datachunk {
 public:
 	wstring w_string;
 	et_type type;
+	HPDF_Box rect;
+	int	ev;
 
 	et_datachunk():w_string() {};
 	et_datachunk(const et_datachunk &dc) { w_string = dc.w_string; type = dc.type; };

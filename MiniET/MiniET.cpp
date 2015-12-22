@@ -48,8 +48,8 @@ void output_pdf_preview(string output_file);
 void output_pdf_printing(string output_file);
 int break_et_wstring(wchar_t* w_string, size_t str_size, wchar_t control_code, bool new_line);
 
-static vector<vector<et_datachunk>> data_vect;
-static std::vector<et_datachunk> data_line;
+vector<vector<et_datachunk>> data_vect;
+std::vector<et_datachunk> data_line;
 
 static string config_file, target_file, output_file;
 static bool b_preview, b_print, b_bom;
@@ -552,6 +552,9 @@ int output_pdf_file(string output_file)
 			{
 				doc->end_page();
 				doc->new_page();
+			}
+			else if (dc.type == ET_DRAWBOX) {
+				doc->place_image(dc.rect.top, dc.rect.left, dc.rect.bottom, dc.rect.right, dc.ev, dc.w_string);
 			}
 			else { // paint-able elements
 				if (doc->Q > 0)
