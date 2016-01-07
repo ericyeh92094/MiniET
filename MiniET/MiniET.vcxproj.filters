@@ -207,9 +207,6 @@
     <ClInclude Include="haru\include\hpdf_config.h">
       <Filter>Header Files\haru</Filter>
     </ClInclude>
-    <ClInclude Include="et_hpdcdoc.h">
-      <Filter>Header Files\et_kernel</Filter>
-    </ClInclude>
     <ClInclude Include="haru\include\t4.h">
       <Filter>Header Files\haru</Filter>
     </ClInclude>
@@ -221,6 +218,12 @@
     </ClInclude>
     <ClInclude Include="CmdLineParserEngine.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="et_controls.h">
+      <Filter>Header Files\et_kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="et_hpdfdoc.h">
+      <Filter>Header Files\et_kernel</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

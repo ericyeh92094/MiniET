@@ -1,5 +1,4 @@
-#ifndef _ET_COMMAND_
-#define _ET_COMMAND_
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -7,7 +6,7 @@
 #include <wchar.h>
 
 #include "et_datachunk.h"
-#include "et_hpdcdoc.h"
+#include "et_hpdfdoc.h"
 
 using namespace std;
 
@@ -31,5 +30,4 @@ public:
 	static bool dispatch_command(hpdf_doc& doc, et_datachunk& dc); 
 };
 
-#endif
 

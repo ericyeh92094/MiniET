@@ -131,8 +131,9 @@
     <ClInclude Include="et_command.h" />
     <ClInclude Include="et_datachunk.h" />
     <ClInclude Include="haru\include\hpdf_version.h" />
-    <ClInclude Include="et_hpdcdoc.h" />
+    <ClInclude Include="et_hpdfdoc.h" />
     <ClInclude Include="haru\include\t4.h" />
+    <ClInclude Include="et_controls.h" />
     <ClInclude Include="include\utf8.h" />
     <ClInclude Include="libpng\include\png.h" />
     <ClInclude Include="libpng\include\pngconf.h" />

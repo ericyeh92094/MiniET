@@ -22,7 +22,7 @@
 #include "utf8.h"
 #include "et_command.h"
 #include "et_datachunk.h"
-#include "et_hpdcdoc.h"
+#include "et_hpdfdoc.h"
 #include "CmdLineParserEngine.h"
 
 using namespace std;
@@ -523,6 +523,95 @@ int read_ansi_file(ifstream &fs8, string &firstline)
 	return line_count;
 }
 
+void prepare_line(vector<et_datachunk> &local_data_line, hpdf_doc *doc)
+{
+	vector<et_datachunk>::iterator data_iter;
+	et_controls cp = doc->et_cp;
+
+	data_iter = local_data_line.begin();
+	for (; data_iter != local_data_line.end(); data_iter++)
+	{
+		et_datachunk &dc = *data_iter;
+		bool result = false;
+
+		if (dc.type == ET_COMMAND || dc.type == ET_SP_COMMAND)
+		{
+			dc.cp = cp;
+			result = command::dispatch_command(*doc, dc);
+			cp = dc.cp;
+		}
+		else if (dc.type == ET_NEWPAGE)
+		{
+		}
+		else if (dc.type == ET_DRAWBOX) {
+			// dc.rect had been calc
+		}
+		else { // paint-able elements
+			dc.cp = cp;
+			if (dc.cp.Q > 0)
+			{
+				wstring spaces(dc.cp.Q, L' ');
+				dc.w_string = spaces + dc.w_string;
+			}
+			doc->calc_text(dc);
+		}
+	}
+	doc->et_cp = cp;
+}
+
+void calc_line(vector<et_datachunk> &local_data_line, hpdf_doc *doc)
+{
+	vector<et_datachunk>::iterator data_iter;
+	et_controls cp = doc->et_cp;
+	HPDF_REAL f_line_width = 0, f_line_height = 0;
+
+	data_iter = local_data_line.begin();
+	for (; data_iter != local_data_line.end(); data_iter++)
+	{
+		et_datachunk &dc = *data_iter;
+		
+		if (dc.type != ET_COMMAND && dc.type != ET_SP_COMMAND && dc.type != ET_DRAWBOX) {
+			HPDF_REAL width = fabs(dc.rect.right - dc.rect.left);
+			HPDF_REAL height = fabs(dc.rect.top - dc.rect.bottom);
+
+			f_line_width += width;
+			f_line_height = fmax(height, f_line_height);	
+		}
+	}
+
+	HPDF_REAL f_offset = 0;
+
+	if (f_line_width > 0 && f_line_height > 0)
+	{
+		HPDF_REAL f_paintable_width = doc->f_width - doc->f_margin_left - doc->f_margin_right;
+
+		switch(doc->et_cp.J)
+		{ 
+			case et_controls::J_LEFT:
+				f_offset = 0;
+				break;
+			case et_controls::J_MIDDLE:
+				f_offset = fabs(f_paintable_width - f_line_width) / 2;
+				break;
+			case et_controls::J_RIGHT:
+				f_offset = fabs(f_paintable_width - f_line_width);
+				break;
+		}
+	}
+
+	//adjust the x position
+	data_iter = local_data_line.begin();
+	for (; data_iter != local_data_line.end(); data_iter++)
+	{
+		et_datachunk &dc = *data_iter;
+
+		if (dc.type != ET_COMMAND && dc.type != ET_SP_COMMAND && dc.type != ET_DRAWBOX) {
+			dc.rect.right += f_offset;
+			dc.rect.left += f_offset;
+		}
+	}
+}
+
 int output_pdf_file(string output_file)
 {
 	vector<vector<et_datachunk>>::iterator line_iter;
@@ -539,14 +628,21 @@ int output_pdf_file(string output_file)
 		vector<et_datachunk> &local_data_line = *line_iter;
 		vector<et_datachunk>::iterator data_iter;
 
+		prepare_line(local_data_line, doc); // parse the commands and calc position
+		calc_line(local_data_line, doc);
+
+		//Now it is rendering time
 		data_iter = local_data_line.begin();
 		for (; data_iter != local_data_line.end(); data_iter++)
 		{
 			et_datachunk &dc = *data_iter;
 			bool result = false;
+
 			if (dc.type == ET_COMMAND || dc.type == ET_SP_COMMAND)
 			{
-				result = command::dispatch_command(*doc, dc);
+				//result = command::dispatch_command(*doc, dc);
+				doc->et_cp = dc.cp;
+				
 			}
 			else if (dc.type == ET_NEWPAGE)
 			{
@@ -557,12 +653,8 @@ int output_pdf_file(string output_file)
 				doc->place_image(dc.rect.top, dc.rect.left, dc.rect.bottom, dc.rect.right, dc.ev, dc.w_string);
 			}
 			else { // paint-able elements
-				if (doc->Q > 0)
-				{
-					wstring spaces(doc->Q, L' ');
-					dc.w_string = spaces + dc.w_string;
-				}
-				doc->add_text(dc.type, dc.w_string);			
+				doc->et_cp = dc.cp; // carry over all controls
+				doc->add_text(dc);			
 			}
 
 		}

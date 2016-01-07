@@ -58,7 +58,10 @@ public:
 		int len = cmd_string.length();
 		if (len > 0)
 		{
-			doc->init(doc->P); // reset all param
+			int P = datachunk->cp.P;
+			doc->init(datachunk->cp.P); // reset all param
+			datachunk->cp.init(P);
+
 			if (len > 1)
 			{
 				cmd_string = cmd_string.substr(1, len);
@@ -74,7 +77,7 @@ struct et_command_T : public command {
 public:
 	et_command_T() {};
 	virtual bool parse(wstring& cmd_string) {
-		return process_single_param(cmd_string, doc->T);
+		return process_single_param(cmd_string, datachunk->cp.T);
 	}
 
 };
@@ -84,7 +87,7 @@ struct et_command_U : public command {
 public:
 	et_command_U() {};
 	virtual bool parse(wstring& cmd_string) {
-		return process_single_param(cmd_string, doc->U);
+		return process_single_param(cmd_string, datachunk->cp.U);
 	}
 
 };
@@ -98,13 +101,14 @@ public:
 		bool result = process_single_param(cmd_string, P);
 
 		if (P < 60)
-			doc->P = 9;
+			datachunk->cp.P = 9;
 		else if (P < 100)
-			doc->P = 60;
+			datachunk->cp.P = 60;
 		else
-			doc->P = P;
+			datachunk->cp.P = P;
 
-		doc->init(doc->P);
+		doc->init(datachunk->cp.P); // reset all param
+		datachunk->cp.init(P);
 
 		return result;
 	}
@@ -124,7 +128,7 @@ public:
 				int px = 0, py = 0;
 				if (swscanf(code_str.c_str(), L";%d;%d", &px, &py) == 2)
 				{
-					doc->text_goto(px, py);
+					doc->text_goto(px, py, datachunk->cp);
 				}
 			}
 			
@@ -151,7 +155,7 @@ public:
 				int px = 0, py = 0, w = 0, h = 0, ev = 0;
 				if (swscanf(code_str.c_str(), L"%d;%d;%d;%d;%d", &px, &py, &w, &h, &ev) == 5)
 				{
-					doc->place_image(px, py, px + w, py + h, ev, file_path);
+					doc->place_image(px, py, px + w, py + h, ev, file_path);			
 					/*
 					et_datachunk dc(ET_DRAWBOX); // new chunk
 					dc.w_string = file_path;
@@ -183,13 +187,15 @@ public:
 				// font name
 				wstring font_wstr = cmd_string.substr(2, len-3);
 				string font_name = string(font_wstr.begin(), font_wstr.end());
-				doc->use_eng_font(font_name);
-				doc->use_cjk_font(font_name);
+				datachunk->cp.use_eng_font(font_name);
+				datachunk->cp.use_cjk_font(font_name);
 
 				len = 0;
 			}
 			else
-				doc->use_font(font_letter);
+			{
+				datachunk->cp.F = datachunk->cp.use_font(font_letter);
+			}
 
 			if (len > 1)
 			{
@@ -217,7 +223,7 @@ public:
 				// font name
 				wstring font_wstr = cmd_string.substr(3, len - 4);
 				string font_name = string(font_wstr.begin(), font_wstr.end());
-				doc->use_cjk_font(font_name);
+				datachunk->cp.use_cjk_font(font_name);
 			}
 		}
 		return true;
@@ -240,7 +246,7 @@ public:
 				// font name
 				wstring font_wstr = cmd_string.substr(3, len - 4);
 				string font_name = string(font_wstr.begin(), font_wstr.end());
-				doc->use_eng_font(font_name);
+				datachunk->cp.use_eng_font(font_name);
 			}
 		}
 		return true;
@@ -282,6 +288,13 @@ public:
 		if (len > 0)
 		{
 			wstring just_indicator = cmd_string.substr(1, 1); // L, M, R
+
+			if (just_indicator[0] == 'L')
+				datachunk->cp.J = et_controls::J_LEFT;
+			if (just_indicator[0] == 'M')
+				datachunk->cp.J = et_controls::J_MIDDLE;
+			if (just_indicator[0] == 'R')
+				datachunk->cp.J = et_controls::J_RIGHT;
 		}
 		return true;
 	}
@@ -294,7 +307,7 @@ struct et_command_W : public command {
 public:
 	et_command_W() {};
 	virtual bool parse(wstring& cmd_string) {
-		return process_single_param(cmd_string, doc->W);
+		return process_single_param(cmd_string, datachunk->cp.W);
 	}
 
 };
@@ -305,7 +318,7 @@ struct et_command_Z : public command {
 public:
 	et_command_Z() {};
 	virtual bool parse(wstring& cmd_string) {
-		return process_single_param(cmd_string, doc->Z);
+		return process_single_param(cmd_string, datachunk->cp.Z);
 	}
 
 };
@@ -315,7 +328,7 @@ struct et_command_X : public command {
 public:
 	et_command_X() {};
 	virtual bool parse(wstring& cmd_string) {
-		return process_single_param(cmd_string, doc->X);
+		return process_single_param(cmd_string, datachunk->cp.X);
 	}
 };
 
@@ -324,7 +337,7 @@ struct et_command_G : public command {
 public:
 	et_command_G() {};
 	virtual bool parse(wstring& cmd_string) {
-		return process_single_param(cmd_string, doc->G);
+		return process_single_param(cmd_string, datachunk->cp.G);
 	}
 };
 
@@ -343,7 +356,7 @@ struct et_command_S : public command {
 public:
 	et_command_S() {};
 	virtual bool parse(wstring& cmd_string) {
-		return process_single_param(cmd_string, doc->S);
+		return process_single_param(cmd_string, datachunk->cp.S);
 	}
 
 };
@@ -353,7 +366,7 @@ struct et_command_L : public command {
 public:
 	et_command_L() {};
 	virtual bool parse(wstring& cmd_string) {
-		return process_single_param(cmd_string, doc->L);
+		return process_single_param(cmd_string, datachunk->cp.L);
 	}
 };
 
@@ -363,7 +376,7 @@ struct et_command_O : public command {
 public:
 	et_command_O() {};
 	virtual bool parse(wstring& cmd_string) {
-		return process_single_param(cmd_string, doc->O);
+		return process_single_param(cmd_string, datachunk->cp.O);
 	}
 
 };
@@ -373,7 +386,7 @@ struct et_command_Q : public command {
 public:
 	et_command_Q() {};
 	virtual bool parse(wstring& cmd_string) {
-		return process_single_param(cmd_string, doc->Q);
+		return process_single_param(cmd_string, datachunk->cp.Q);
 	}
 
 };
@@ -386,7 +399,7 @@ public:
 		int len = cmd_string.length();
 		if (len > 0)
 		{
-			doc->VorH = 'V';
+			datachunk->cp.VorH = 'V';
 			if (len > 1)
 			{
 				cmd_string = cmd_string.substr(1, len);
@@ -406,7 +419,7 @@ public:
 		int len = cmd_string.length();
 		if (len > 0)
 		{
-			doc->VorH = 'H';
+			datachunk->cp.VorH = 'H';
 			if (len > 1)
 			{
 				cmd_string = cmd_string.substr(1, len);
@@ -426,7 +439,7 @@ public:
 		int len = cmd_string.length();
 		if (len > 0)
 		{
-			doc->CorE = 'C';
+			datachunk->cp.CorE = 'C';
 			if (len > 1)
 			{
 				cmd_string = cmd_string.substr(1, len);
@@ -446,7 +459,7 @@ public:
 		int len = cmd_string.length();
 		if (len > 0)
 		{
-			doc->CorE = 'E';
+			datachunk->cp.CorE = 'E';
 			if (len > 1)
 			{
 				cmd_string = cmd_string.substr(1, len);
@@ -544,7 +557,8 @@ bool command::dispatch_command(hpdf_doc &doc, et_datachunk& dc) //
 		size_t pos = command_string.find(L";", 0);
 
 		if (pos == string::npos) // find no ;
-			return result;
+			//return result;
+			pos = command_string.length() - 1;
 
 		wstring cmd_name = command_string.substr(0, pos);
 
