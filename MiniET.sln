@@ -1,13 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MiniET", "MiniET\MiniET.vcxproj", "{D293951E-60CB-4358-84F9-053BA3E40440}"
-EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "MiniETSetup", "MiniETSetup\MiniETSetup.vdproj", "{B45EE273-7E04-4F07-BFFD-CACBEE40DED6}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EnumPrinters", "EnumPrinters\EnumPrinters.vcxproj", "{ECAF4322-8F0E-4DB8-86EE-39C5A139010B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,20 +19,6 @@ Global
 		{D293951E-60CB-4358-84F9-053BA3E40440}.Release|Win32.ActiveCfg = Debug|Win32
 		{D293951E-60CB-4358-84F9-053BA3E40440}.Release|Win32.Build.0 = Debug|Win32
 		{D293951E-60CB-4358-84F9-053BA3E40440}.Release|x64.ActiveCfg = Release|Win32
-		{B45EE273-7E04-4F07-BFFD-CACBEE40DED6}.Debug|Win32.ActiveCfg = Debug
-		{B45EE273-7E04-4F07-BFFD-CACBEE40DED6}.Debug|x64.ActiveCfg = Debug
-		{B45EE273-7E04-4F07-BFFD-CACBEE40DED6}.Debug|x64.Build.0 = Debug
-		{B45EE273-7E04-4F07-BFFD-CACBEE40DED6}.Release|Win32.ActiveCfg = Release
-		{B45EE273-7E04-4F07-BFFD-CACBEE40DED6}.Release|x64.ActiveCfg = Release
-		{B45EE273-7E04-4F07-BFFD-CACBEE40DED6}.Release|x64.Build.0 = Release
-		{ECAF4322-8F0E-4DB8-86EE-39C5A139010B}.Debug|Win32.ActiveCfg = Debug|Win32
-		{ECAF4322-8F0E-4DB8-86EE-39C5A139010B}.Debug|Win32.Build.0 = Debug|Win32
-		{ECAF4322-8F0E-4DB8-86EE-39C5A139010B}.Debug|x64.ActiveCfg = Debug|x64
-		{ECAF4322-8F0E-4DB8-86EE-39C5A139010B}.Debug|x64.Build.0 = Debug|x64
-		{ECAF4322-8F0E-4DB8-86EE-39C5A139010B}.Release|Win32.ActiveCfg = Release|Win32
-		{ECAF4322-8F0E-4DB8-86EE-39C5A139010B}.Release|Win32.Build.0 = Release|Win32
-		{ECAF4322-8F0E-4DB8-86EE-39C5A139010B}.Release|x64.ActiveCfg = Release|x64
-		{ECAF4322-8F0E-4DB8-86EE-39C5A139010B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
